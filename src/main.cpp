@@ -10,21 +10,30 @@
 #include <vec3.h>
 #include <ray.h>
 
-bool hit_sphere(const Vec3 &aSphereCenter, float radius, const Ray &aRay) {
+// Here, we compute at which point in time the ray would hit the sphere
+float hit_sphere(const Vec3 &aSphereCenter, float radius, const Ray &aRay) {
     Vec3 oc = aRay.origin() - aSphereCenter;
     float a = aRay.direction().len_squared();
     float b = 2.0f * oc.dot(aRay.direction());
     float c = oc.len_squared() - radius * radius;
     float discriminant = b * b - 4 * a * c;
-    return discriminant > 0;
+    if (discriminant < 0) {
+        return -1.0f;
+    } else {
+        return (-b - sqrt(discriminant)) / (2.0f * a);
+    }
 }
 
 Vec3 ray_color(const Ray &aRay) {
-    if (hit_sphere(Vec3(0, 0, -1), 0.5, aRay)) {
-        return {1, 0, 0};
+    float t = hit_sphere(Vec3(0, 0, -1), 0.5, aRay);
+
+    if (t > 0.0f) {
+        Vec3 normalAtIntersection = (aRay.at(t) - Vec3(0, 0, -1)).normalize();
+        return 0.5 * (normalAtIntersection + 1);
     }
     float normalizedDirectionY = aRay.direction().normalize().y();
-    float t = 0.5f * (normalizedDirectionY + 1);
+    // Project the [-1,1] y segment into [0,1] segment in order to use lerp for color blending
+    t = 0.5f * (normalizedDirectionY + 1);
     return (1 - t) * Vec3(1.0, 1.0, 1.0) + t * Vec3(0.5, 0.7, 1.0);
 }
 
