@@ -10,8 +10,19 @@
 #include <vec3.h>
 #include <ray.h>
 
+bool hit_sphere(const Vec3 &aSphereCenter, float radius, const Ray &aRay) {
+    Vec3 oc = aRay.origin() - aSphereCenter;
+    float a = aRay.direction().len_squared();
+    float b = 2.0f * oc.dot(aRay.direction());
+    float c = oc.len_squared() - radius * radius;
+    float discriminant = b * b - 4 * a * c;
+    return discriminant > 0;
+}
 
 Vec3 ray_color(const Ray &aRay) {
+    if (hit_sphere(Vec3(0, 0, -1), 0.5, aRay)) {
+        return {1, 0, 0};
+    }
     float normalizedDirectionY = aRay.direction().normalize().y();
     float t = 0.5f * (normalizedDirectionY + 1);
     return (1 - t) * Vec3(1.0, 1.0, 1.0) + t * Vec3(0.5, 0.7, 1.0);
