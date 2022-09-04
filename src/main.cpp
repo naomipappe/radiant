@@ -9,31 +9,22 @@
 
 #include <vec3.h>
 #include <ray.h>
+#include <sphere.h>
 
 // Here, we compute at which point in time the ray would hit the sphere
-float hit_sphere(const Vec3 &aSphereCenter, float radius, const Ray &aRay) {
-    Vec3 oc = aRay.origin() - aSphereCenter;
-    float a = aRay.direction().len_squared();
-    float b = 2.0f * oc.dot(aRay.direction());
-    float c = oc.len_squared() - radius * radius;
-    float discriminant = b * b - 4 * a * c;
-    if (discriminant < 0) {
-        return -1.0f;
-    } else {
-        return (-b - sqrt(discriminant)) / (2.0f * a);
-    }
-}
-
 Vec3 ray_color(const Ray &aRay) {
-    float t = hit_sphere(Vec3(0, 0, -1), 0.5, aRay);
+    Sphere sphere(Vec3(0, 0, -1), 0.5);
+    HitRecord record;
+    bool hit = sphere.hit(aRay, 0.0, std::numeric_limits<float>::infinity(), record);
 
-    if (t > 0.0f) {
-        Vec3 normalAtIntersection = (aRay.at(t) - Vec3(0, 0, -1)).normalize();
+    if (hit) {
+        // Find the directional vector by subtracting the origin from the hit point
+        Vec3 normalAtIntersection = record.mNormalAtHitPoint;
         return 0.5 * (normalAtIntersection + 1);
     }
     float normalizedDirectionY = aRay.direction().normalize().y();
     // Project the [-1,1] y segment into [0,1] segment in order to use lerp for color blending
-    t = 0.5f * (normalizedDirectionY + 1);
+    float t = 0.5f * (normalizedDirectionY + 1);
     return (1 - t) * Vec3(1.0, 1.0, 1.0) + t * Vec3(0.5, 0.7, 1.0);
 }
 
@@ -41,7 +32,7 @@ int main() {
     // Configure image parameters
 
     const float aspectRatio = 16.0f / 9.0f;
-    const int32_t imageWidth = 1024;
+    const int32_t imageWidth = 1920;
     const auto imageHeight = static_cast<int32_t>(imageWidth / aspectRatio);
 
     // Configure camera parameters
