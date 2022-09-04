@@ -29,7 +29,7 @@ bool Sphere::hit(const Ray &aRay, float tMin, float tMax, HitRecord &aHistory) c
         }
         aHistory.t = root;
         aHistory.mHitPoint = aRay.at(root);
-        aHistory.mNormalAtHitPoint = (aHistory.mHitPoint - mCenter).normalize();
+        aHistory.setFaceNormal(aRay, (aHistory.mHitPoint - mCenter).normalize());
         return true;
     }
 }

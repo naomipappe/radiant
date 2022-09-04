@@ -1,30 +1,17 @@
-#include <iostream>
-#include <vector>
+#include <main.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <hittable_list.h>
 
-#include <stb_image.h>
-#include <stb_image_write.h>
-
-#include <vec3.h>
-#include <ray.h>
-#include <sphere.h>
 
 // Here, we compute at which point in time the ray would hit the sphere
-Vec3 ray_color(const Ray &aRay) {
-    Sphere sphere(Vec3(0, 0, -1), 0.5);
+Vec3 ray_color(const Ray &aRay, const Hittable &world) {
     HitRecord record;
-    bool hit = sphere.hit(aRay, 0.0, std::numeric_limits<float>::infinity(), record);
-
+    bool hit = world.hit(aRay, 0.0, infinity, record);
     if (hit) {
-        // Find the directional vector by subtracting the origin from the hit point
-        Vec3 normalAtIntersection = record.mNormalAtHitPoint;
-        return 0.5 * (normalAtIntersection + 1);
+        return 0.5 * (record.mNormalAtHitPoint + 1);
     }
-    float normalizedDirectionY = aRay.direction().normalize().y();
     // Project the [-1,1] y segment into [0,1] segment in order to use lerp for color blending
-    float t = 0.5f * (normalizedDirectionY + 1);
+    float t = 0.5f * (aRay.direction().normalize().y() + 1);
     return (1 - t) * Vec3(1.0, 1.0, 1.0) + t * Vec3(0.5, 0.7, 1.0);
 }
 
@@ -34,6 +21,10 @@ int main() {
     const float aspectRatio = 16.0f / 9.0f;
     const int32_t imageWidth = 1920;
     const auto imageHeight = static_cast<int32_t>(imageWidth / aspectRatio);
+
+    HittableList world;
+    world.add(std::make_shared<Sphere>(Vec3(0, 0, -1), 0.5));
+    world.add(std::make_shared<Sphere>(Vec3(0, -100.5, -1), 100));
 
     // Configure camera parameters
 
@@ -60,7 +51,7 @@ int main() {
 
             // Check this 3D Math
             Ray r(origin, lowerLeft + u * horizontal + v * vertical - origin);
-            Vec3 color = ray_color(r);
+            Vec3 color = ray_color(r, world);
 
             buffer[index++] = static_cast<unsigned char>(255.999 * color.r());
             buffer[index++] = static_cast<unsigned char>(255.999 * color.g());
