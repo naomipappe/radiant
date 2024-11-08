@@ -3,7 +3,7 @@ project(radiant)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(RADIANT_SOURCES src/main.cpp)
+set(RADIANT_SOURCES src/main.cpp src/garbage_dump.cpp)
 
 add_executable(radiant ${RADIANT_SOURCES})
 
