@@ -1,7 +1,5 @@
 #include <cstdio>
-
-#include <garbage_dump.hpp>
-
+#include <garbage/garbage_dump.hpp>
 #include <random>
 
 int main()
