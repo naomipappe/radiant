@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include <common/int_types.hpp>
+#include <core/int_types.hpp>
 #include <cstring> // For std::memset
 
 namespace radiant
@@ -33,10 +33,14 @@ struct vec
     T m_data[N];
 
     vec() { std::memset(m_data, 0, N); }
-    vec(const T* data) : { std::memcpy(m_data, data, sizeof(T) * N); }
+    vec(const T* data) { std::memcpy(m_data, data, sizeof(T) * N); }
 
-    const T& operator[](u32 i) const { return m_data[i] };
-    T&       operator[](u32 i) { return m_data[i] };
+    template<typename... Args>
+    constexpr vec(Args&&... args) : m_data{static_cast<T>(std::forward<Args>(args))...} {
+        static_assert(sizeof...(Args) == N, "Number of arguments must match vector size");
+    }
+    const T& operator[](u32 i) const { return m_data[i]; };
+    T&       operator[](u32 i) { return m_data[i]; };
 
     vec operator-() const
     {
@@ -102,7 +106,7 @@ struct vec
         return *this;
     }
 
-    f32 dot(const vec& v)
+    f32 dot(const vec& v) const
     {
         f32 result = 0.0f;
         for (u32 i = 0; i < N; ++i)
@@ -221,5 +225,4 @@ inline vec<T, N> normalized(const vec<T, N>& v)
 {
     return v / v.length();
 }
-
 } // namespace radiant
