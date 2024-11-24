@@ -3,6 +3,8 @@ project(radiant)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(radiant src/main.cpp src/sphere.cpp src/hittable_list.cpp)
+set(RADIANT_SOURCES src/main.cpp src/garbage/garbage_dump.cpp)
+
+add_executable(radiant ${RADIANT_SOURCES})
 
 target_include_directories(radiant PUBLIC include)

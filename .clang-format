@@ -29,14 +29,13 @@ BraceWrapping:
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
 BreakConstructorInitializers: AfterColon
-# Not supported in 6
-#BreakInheritanceList: BeforeColon
+BreakInheritanceList: BeforeColon
 Cpp11BracedListStyle: false
 ColumnLimit: 125
 IndentCaseLabels: true
 IndentWidth: 4
 PointerAlignment: Left
 ReflowComments: true
-SortIncludes: false
+SortIncludes: true
 SpaceAfterTemplateKeyword: true
 SpaceBeforeParens: ControlStatements
