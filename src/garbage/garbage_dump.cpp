@@ -1,4 +1,8 @@
 #include <fstream>
+#include <memory>
+
+#include <stb_image_write.h>
+
 #include <garbage/garbage_dump.hpp>
 
 namespace radiant::garbage
@@ -38,4 +42,23 @@ void write_ppm(const rgb_color* pixels, u32 width, u32 height, std::filesystem::
     }
     destination_file.close();
 }
+
+void write_png(const rgb_color* pixels, u32 width, u32 height, std::filesystem::path& destination)
+{
+    // TODO: This is messy because I use std::filesystem::path and it uses wchar
+    std::string temporary = destination.string();
+
+    // TODO: This is messy because I do not store the image I am writing into as a continous memory, change that
+    // TODO: For now, this means converting the image into appropriate format
+    std::vector<u8> converted_data(width * height * 3, 1);
+    for (int i = 0; i < width * height; i++)
+    {
+        converted_data[i * 3 + 0] = pixels[i].r(); // R
+        converted_data[i * 3 + 1] = pixels[i].g(); // G
+        converted_data[i * 3 + 2] = pixels[i].b(); // B
+    }
+
+    stbi_write_png(temporary.c_str(), width, height, 3, converted_data.data(), width * 3);
+}
+
 } // namespace radiant::garbage

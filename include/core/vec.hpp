@@ -119,7 +119,7 @@ struct vec
     vec& normalize() { return *this / this->length(); }
 
     f32 length() const { return std::sqrt(dot(*this)); }
-    f32 sqlength() const { return dot(*this); }
+    f32 length_squared() const { return dot(*this); }
 };
 
 template <typename T, size_t N>
@@ -200,12 +200,12 @@ inline vec<T, N> operator/(const vec<T, N>& a, f32 t)
 }
 
 template <typename T, size_t N>
-inline vec<T, N> dot(const vec<T, N>& a, const vec<T, N>& b)
+inline T dot(const vec<T, N>& a, const vec<T, N>& b)
 {
-    vec<T, N> result;
+    T result;
     for (u32 i = 0; i < N; ++i)
     {
-        result[i] = a[i] * b[i];
+        result = a[i] * b[i];
     }
     return result;
 }

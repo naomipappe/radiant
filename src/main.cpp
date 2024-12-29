@@ -9,11 +9,25 @@
 
 using namespace radiant;
 
+bool hit_sphere(const vec3f& center, f32 radius, const Ray& r)
+{
+    vec3f center_to_ray_origin = center - r.m_origin;
+    f32   a                    = r.m_direction.length_squared();
+    f32   b                    = -2.0f * dot(r.m_direction, center_to_ray_origin);
+    f32   c                    = center_to_ray_origin.length_squared() - radius * radius;
+    f32   D                    = b * b - 4 * a * c;
+    return D >= 0;
+}
+
 rgb_color ray_color(const Ray& r)
 {
-    vec3f udir = normalized(r.m_direction);
-    f32   t    = 0.5f * (udir[1] + 1.0);
-    rgb_color result =  (1.0f - t) * rgb_color(1.0, 1.0, 1.0) + t * rgb_color(0.5, 0.7, 1.0);
+    if (hit_sphere(vec3f(0.0f, 0.0f, -2.0f), 0.5f, r))
+    {
+        return rgb_color(1.0f, 0.0f, 0.0f);
+    }
+    vec3f     udir   = normalized(r.m_direction);
+    f32       t      = 0.5f * (udir[1] + 1.0);
+    rgb_color result = (1.0f - t) * rgb_color(1.0f, 1.0f, 1.0f) + t * rgb_color(0.5f, 0.7f, 1.0f);
     return result;
 }
 
@@ -47,6 +61,7 @@ int main()
     vec3f start_pixel_pos = viewport_origin + 0.5f * (pixel_delta_x + pixel_delta_y);
 
     // Render the scene to the image buffer
+    printf("Rendering to image\n");
     for (u32 r = 0; r < image_height; ++r)
     {
         for (u32 c = 0; c < image_width; ++c)
@@ -57,13 +72,12 @@ int main()
             vec3f ray_direction = pixel_sample_loc - camera_pos;
             Ray   ray(camera_pos, ray_direction);
             image[c + r * image_width] = ray_color(ray);
-            ;
         }
     }
 
-    std::filesystem::path destination("test.ppm");
-
-    garbage::write_ppm(image.data(), image_width, image_height, destination);
+    printf("Dumping image to disk\n");
+    std::filesystem::path destination("test.png");
+    garbage::write_png(image.data(), image_width, image_height, destination);
 
     return 0;
 }
