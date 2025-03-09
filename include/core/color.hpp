@@ -12,6 +12,7 @@ struct rgb_color : public vec3f
 {
     using vec3f::vec3f;
 
+    rgb_color() : vec3f(0.0f, 0.0f, 0.0f) {}
     // This is stupid, but it works
     rgb_color(const vec3f& base) : vec3f(base) {}
 

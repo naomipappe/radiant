@@ -9,10 +9,13 @@ set(RADIANT_SOURCES
 src/main.cpp 
 src/garbage/garbage_dump.cpp 
 src/core/sphere.cpp
-src/core/linear_aggregate.cpp)
+src/core/linear_aggregate.cpp
+src/core/camera.cpp)
 
 add_executable(radiant ${RADIANT_SOURCES})
 add_subdirectory(external)
 
 target_include_directories(radiant PRIVATE include)
 target_link_libraries(radiant PRIVATE stb)
+
+target_link_directories(radiant PRIVATE fmt)

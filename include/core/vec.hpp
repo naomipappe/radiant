@@ -147,6 +147,28 @@ vec<T, N> operator+(const vec<T, N>& a, const vec<T, N>& b)
 }
 
 template <typename T, size_t N>
+vec<T, N> operator+(const vec<T, N>& a, T b)
+{
+    vec<T, N> result;
+    for (u32 i = 0; i < N; ++i)
+    {
+        result[i] = a[i] + b;
+    }
+    return result;
+}
+
+template <typename T, size_t N>
+vec<T, N> operator+(T b, const vec<T, N>& a)
+{
+    vec<T, N> result;
+    for (u32 i = 0; i < N; ++i)
+    {
+        result[i] = a[i] + b;
+    }
+    return result;
+}
+
+template <typename T, size_t N>
 vec<T, N> operator-(const vec<T, N>& a, const vec<T, N>& b)
 {
     vec<T, N> result;
