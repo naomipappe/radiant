@@ -5,7 +5,7 @@
 #include <core/ray.hpp>
 #include <core/vec.hpp>
 #include <core/sphere.hpp>
-#include <core/linear_aggregate.hpp>
+#include <core/acceleration_structures/linear_aggregate.hpp>
 
 #include <filesystem>
 #include <vector> // TODO: Remove STL when bored

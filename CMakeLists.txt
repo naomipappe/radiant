@@ -16,3 +16,5 @@ add_subdirectory(external)
 
 target_include_directories(radiant PRIVATE include)
 target_link_libraries(radiant PRIVATE stb)
+
+target_link_directories(radiant PRIVATE fmt)

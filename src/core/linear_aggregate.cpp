@@ -1,4 +1,4 @@
-#include <core/linear_aggregate.hpp>
+#include <core/acceleration_structures/linear_aggregate.hpp>
 
 namespace radiant
 {

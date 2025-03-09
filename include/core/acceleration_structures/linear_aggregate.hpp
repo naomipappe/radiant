@@ -2,7 +2,7 @@
 
 #include <span>
 #include <vector>
-#include <core/aggregate.hpp>
+#include <core/acceleration_structures/aggregate.hpp>
 
 namespace radiant
 {
