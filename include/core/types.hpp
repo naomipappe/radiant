@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cfloat>
 #include <cinttypes>
 
 namespace radiant

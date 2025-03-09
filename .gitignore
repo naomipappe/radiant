@@ -1,5 +1,9 @@
 build/
+dbuild/
+
 .vscode/
+.idea/
+.cache/
 
 .ppm
 .png

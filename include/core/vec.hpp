@@ -1,15 +1,14 @@
 #pragma once
 
 #include <cmath>
-#include <core/int_types.hpp>
-#include <cstring> // For std::memset
+#include <core/types.hpp>
 
 namespace radiant
 {
 // TODO: SIMD enabled vector?
 
 template <typename T, size_t N>
-class vec;
+struct vec;
 
 using vec2f = vec<f32, 2>;
 using vec3f = vec<f32, 3>;
@@ -32,11 +31,12 @@ struct vec
 {
     T m_data[N];
 
-    vec() { std::memset(m_data, 0, N); }
-    vec(const T* data) { std::memcpy(m_data, data, sizeof(T) * N); }
+    vec() : m_data{} {}
+    explicit vec(const T* data) { memcpy(m_data, data, sizeof(T) * N); }
 
-    template<typename... Args>
-    constexpr vec(Args&&... args) : m_data{static_cast<T>(std::forward<Args>(args))...} {
+    template <typename... Args>
+    constexpr explicit vec(Args&&... args) : m_data{ static_cast<T>(std::forward<Args>(args))... }
+    {
         static_assert(sizeof...(Args) == N, "Number of arguments must match vector size");
     }
     const T& operator[](u32 i) const { return m_data[i]; };
@@ -44,10 +44,10 @@ struct vec
 
     vec operator-() const
     {
-        vec result(m_data);
+        vec result;
         for (u32 i = 0; i < N; ++i)
         {
-            result.m_data[i] *= -1;
+            result.m_data[i] = -m_data[i]; // Proper negation
         }
         return result;
     }
@@ -106,6 +106,15 @@ struct vec
         return *this;
     }
 
+    vec& operator+=(T scalar)
+    {
+        for (u32 i = 0; i < N; ++i)
+        {
+            m_data[i] += scalar;
+        }
+        return *this;
+    }
+
     f32 dot(const vec& v) const
     {
         f32 result = 0.0f;
@@ -116,14 +125,18 @@ struct vec
         return result;
     }
 
-    vec& normalize() { return *this / this->length(); }
+    vec& normalize()
+    {
+        *this /= this->length();
+        return *this;
+    }
 
     f32 length() const { return std::sqrt(dot(*this)); }
     f32 length_squared() const { return dot(*this); }
 };
 
 template <typename T, size_t N>
-inline vec<T, N> operator+(const vec<T, N>& a, const vec<T, N>& b)
+vec<T, N> operator+(const vec<T, N>& a, const vec<T, N>& b)
 {
     vec<T, N> result;
     for (u32 i = 0; i < N; ++i)
@@ -134,7 +147,7 @@ inline vec<T, N> operator+(const vec<T, N>& a, const vec<T, N>& b)
 }
 
 template <typename T, size_t N>
-inline vec<T, N> operator-(const vec<T, N>& a, const vec<T, N>& b)
+vec<T, N> operator-(const vec<T, N>& a, const vec<T, N>& b)
 {
     vec<T, N> result;
     for (u32 i = 0; i < N; ++i)
@@ -145,7 +158,7 @@ inline vec<T, N> operator-(const vec<T, N>& a, const vec<T, N>& b)
 }
 
 template <typename T, size_t N>
-inline vec<T, N> operator*(const vec<T, N>& a, const vec<T, N>& b)
+vec<T, N> operator*(const vec<T, N>& a, const vec<T, N>& b)
 {
     vec<T, N> result;
     for (u32 i = 0; i < N; ++i)
@@ -156,7 +169,7 @@ inline vec<T, N> operator*(const vec<T, N>& a, const vec<T, N>& b)
 }
 
 template <typename T, size_t N>
-inline vec<T, N> operator/(const vec<T, N>& a, const vec<T, N>& b)
+vec<T, N> operator/(const vec<T, N>& a, const vec<T, N>& b)
 {
     vec<T, N> result;
     for (u32 i = 0; i < N; ++i)
@@ -167,7 +180,7 @@ inline vec<T, N> operator/(const vec<T, N>& a, const vec<T, N>& b)
 }
 
 template <typename T, size_t N>
-inline vec<T, N> operator*(const vec<T, N>& a, f32 t)
+vec<T, N> operator*(const vec<T, N>& a, f32 t)
 {
     vec<T, N> result;
     for (u32 i = 0; i < N; ++i)
@@ -178,7 +191,7 @@ inline vec<T, N> operator*(const vec<T, N>& a, f32 t)
 }
 
 template <typename T, size_t N>
-inline vec<T, N> operator*(f32 t, const vec<T, N>& a)
+vec<T, N> operator*(f32 t, const vec<T, N>& a)
 {
     vec<T, N> result;
     for (u32 i = 0; i < N; ++i)
@@ -189,7 +202,7 @@ inline vec<T, N> operator*(f32 t, const vec<T, N>& a)
 }
 
 template <typename T, size_t N>
-inline vec<T, N> operator/(const vec<T, N>& a, f32 t)
+vec<T, N> operator/(const vec<T, N>& a, f32 t)
 {
     vec<T, N> result;
     for (u32 i = 0; i < N; ++i)
@@ -200,28 +213,24 @@ inline vec<T, N> operator/(const vec<T, N>& a, f32 t)
 }
 
 template <typename T, size_t N>
-inline T dot(const vec<T, N>& a, const vec<T, N>& b)
+T dot(const vec<T, N>& a, const vec<T, N>& b)
 {
-    T result;
+    T result{ 0 };
     for (u32 i = 0; i < N; ++i)
     {
-        result = a[i] * b[i];
+        result += a[i] * b[i];
     }
     return result;
 }
 
 template <typename T>
-inline vec<T, 3> cross(const vec<T, 3>& a, const vec<T, 3>& b)
+vec<T, 3> cross(const vec<T, 3>& a, const vec<T, 3>& b)
 {
-    vec<T, 3> result;
-    result[0] = a[1] * b[2] - a[2] * b[1];
-    result[1] = a[2] * b[0] - a[0] * b[2];
-    result[2] = a[0] * b[1] - a[1] * b[0];
-    return result;
+    return vec<T, 3>{ a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0] };
 }
 
 template <typename T, size_t N>
-inline vec<T, N> normalized(const vec<T, N>& v)
+vec<T, N> normalized(const vec<T, N>& v)
 {
     return v / v.length();
 }

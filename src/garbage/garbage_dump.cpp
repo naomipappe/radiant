@@ -46,9 +46,9 @@ void write_ppm(const rgb_color* pixels, u32 width, u32 height, std::filesystem::
 void write_png(const rgb_color* pixels, u32 width, u32 height, std::filesystem::path& destination)
 {
     // TODO: This is messy because I use std::filesystem::path and it uses wchar
-    std::string temporary = destination.string();
+    const std::string temporary = destination.string();
 
-    // TODO: This is messy because I do not store the image I am writing into as a continous memory, change that
+    // TODO: This is messy because I do not store the image I am writing into as a continuous memory, change that
     // TODO: For now, this means converting the image into appropriate format
     std::vector<u8> converted_data(width * height * 3, 1);
     for (int i = 0; i < width * height; i++)
