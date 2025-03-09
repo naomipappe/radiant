@@ -35,8 +35,9 @@ struct vec
     vec() { std::memset(m_data, 0, N); }
     vec(const T* data) { std::memcpy(m_data, data, sizeof(T) * N); }
 
-    template<typename... Args>
-    constexpr vec(Args&&... args) : m_data{static_cast<T>(std::forward<Args>(args))...} {
+    template <typename... Args>
+    constexpr vec(Args&&... args) : m_data{ static_cast<T>(std::forward<Args>(args))... }
+    {
         static_assert(sizeof...(Args) == N, "Number of arguments must match vector size");
     }
     const T& operator[](u32 i) const { return m_data[i]; };
@@ -102,6 +103,15 @@ struct vec
         for (u32 i = 0; i < N; ++i)
         {
             m_data[i] /= scalar;
+        }
+        return *this;
+    }
+
+    vec& operator+=(T scalar)
+    {
+        for (u32 i = 0; i < N; ++i)
+        {
+            m_data[i] += scalar;
         }
         return *this;
     }

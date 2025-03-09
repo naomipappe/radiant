@@ -9,26 +9,42 @@
 
 using namespace radiant;
 
-bool hit_sphere(const vec3f& center, f32 radius, const Ray& r)
+f32 hit_sphere(const vec3f& center, f32 radius, const Ray& r)
 {
     vec3f center_to_ray_origin = center - r.m_origin;
     f32   a                    = r.m_direction.length_squared();
-    f32   b                    = -2.0f * dot(r.m_direction, center_to_ray_origin);
+    f32   h                    = dot(r.m_direction, center_to_ray_origin);
     f32   c                    = center_to_ray_origin.length_squared() - radius * radius;
-    f32   D                    = b * b - 4 * a * c;
-    return D >= 0;
+    f32   D                    = h * h - a * c;
+    if (D < 0)
+    {
+        return -1.0;
+    }
+    else
+    {
+        return (h - std::sqrt(D)) / a;
+    }
 }
 
 rgb_color ray_color(const Ray& r)
 {
-    if (hit_sphere(vec3f(0.0f, 0.0f, -2.0f), 0.5f, r))
+    // This returns a "point of contact" along the ray
+    f32 t = hit_sphere(vec3f(0.0f, 0.0f, -1.0f), 0.5f, r);
+    if (t > 0.0f)
     {
-        return rgb_color(1.0f, 0.0f, 0.0f);
+        vec3f     n = normalized(r.at(t) - vec3f(0.0f, 0.0f, -1.0f));
+        rgb_color n_vis(n);
+        n_vis += 1.0f;
+        n_vis *= 0.5f;
+        return n_vis;
     }
-    vec3f     udir   = normalized(r.m_direction);
-    f32       t      = 0.5f * (udir[1] + 1.0);
-    rgb_color result = (1.0f - t) * rgb_color(1.0f, 1.0f, 1.0f) + t * rgb_color(0.5f, 0.7f, 1.0f);
-    return result;
+    else
+    {
+        vec3f     udir   = normalized(r.m_direction);
+        f32       blend  = 0.5f * (udir[1] + 1.0);
+        rgb_color result = (1.0f - blend) * rgb_color(1.0f, 1.0f, 1.0f) + blend * rgb_color(0.5f, 0.7f, 1.0f);
+        return result;
+    }
 }
 
 int main()
@@ -43,7 +59,7 @@ int main()
 
     // Set up camera parameters
     f32   focal_length    = 1.0f;
-    f32   viewport_height = 1.0f;
+    f32   viewport_height = 2.0f;
     vec3f camera_pos      = vec3f(0.0f, 0.0f, 0.0f);
 
     // TODO: Figure out why is it done like this
@@ -72,6 +88,9 @@ int main()
             vec3f ray_direction = pixel_sample_loc - camera_pos;
             Ray   ray(camera_pos, ray_direction);
             image[c + r * image_width] = ray_color(ray);
+            assert(image[c + r * image_width][0] > 0);
+            assert(image[c + r * image_width][1] > 0);
+            assert(image[c + r * image_width][2] > 0);
         }
     }
 

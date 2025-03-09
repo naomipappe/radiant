@@ -12,7 +12,9 @@ struct rgb_color : public vec3f
 {
     using vec3f::vec3f;
 
-    rgb_color(const vec3f& base) : vec3f(base) {} // This is stupid but it works
+    // This is stupid but it works
+    // also because it is implcit, it can lead to return rgb_color when you really did not mean to
+    rgb_color(const vec3f& base) : vec3f(base) {} 
 
     u8 r() const { return std::clamp(static_cast<u32>(m_data[0] * 255), (u32)0, (u32)255); }
     u8 g() const { return std::clamp(static_cast<u32>(m_data[1] * 255), (u32)0, (u32)255); }
