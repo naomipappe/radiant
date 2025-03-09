@@ -21,6 +21,9 @@ struct CameraSettings
     vec3f m_pixel_delta_v{};
 
     f32 m_focal_length{ 1.0 };
+
+    u32 m_samples_per_pixel{ 4 };
+    f32 m_sampling_scale = 1.0f / m_samples_per_pixel;
 };
 
 class Camera
@@ -36,6 +39,8 @@ class Camera
   private:
     void      init(const CameraSettings& settings);
     rgb_color ray_color(const Ray& ray, const Aggregate* aggregate);
+    vec3f     sample_square() const;
+    Ray       jittered_ray(u32 u, u32 v);
 };
 
 } // namespace radiant
