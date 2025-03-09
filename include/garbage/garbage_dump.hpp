@@ -1,11 +1,10 @@
 #pragma once
 
 #include <cassert>
-#include <cinttypes>
 #include <filesystem>
 
 #include <core/color.hpp>
-#include <core/int_types.hpp>
+#include <core/types.hpp>
 // I call this file "garbage dump" so I feel more inclined to figure out where it actually should be
 namespace radiant::garbage
 {

@@ -2,7 +2,7 @@
 
 #include <limits>
 
-#include <core/int_types.hpp>
+#include <core/types.hpp>
 
 namespace radiant
 {

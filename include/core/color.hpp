@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <core/vec.hpp>
-#include <fstream>
+#include <ostream>
 
 namespace radiant
 {

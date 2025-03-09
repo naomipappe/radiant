@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include <core/int_types.hpp>
+#include <core/types.hpp>
 
 namespace radiant
 {
