@@ -1,8 +1,15 @@
 #include "core/acceleration_structures/aggregate.hpp"
 #include "core/color.hpp"
 #include "core/constants.hpp"
+#include "core/ray.hpp"
 #include "core/render_target.hpp"
+#include "core/types.hpp"
+#include "core/vec.hpp"
 #include <core/camera.hpp>
+
+#include <logging/logging.hpp>
+
+#include <core/probability/distributions.hpp>
 
 namespace radiant
 {
@@ -32,6 +39,8 @@ void Camera::init(const CameraSettings& settings)
     vec3f viewport_origin =
         m_settings.m_position - vec3f(0.0f, 0.0f, m_settings.m_focal_length) - viewport_u / 2 - viewport_v / 2;
     m_settings.m_pixel_00_loc = viewport_origin + 0.5f * (m_settings.m_pixel_delta_u + m_settings.m_pixel_delta_v);
+
+    m_settings.m_sampling_scale = 1.0f / m_settings.m_samples_per_pixel;
 }
 
 rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate)
@@ -61,19 +70,35 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
     }
 
     printf("Rendering to image\n");
-    for (u32 r = 0; r < m_settings.m_image_height; ++r)
+    for (u32 v = 0; v < m_settings.m_image_height; ++v)
     {
-        for (u32 c = 0; c < m_settings.m_image_width; ++c)
+        for (u32 u = 0; u < m_settings.m_image_width; ++u)
         {
-            vec3f pixel_sample_loc =
-                m_settings.m_pixel_00_loc + (r * m_settings.m_pixel_delta_v) + (c * m_settings.m_pixel_delta_u);
-
-            // Ray is directed from the eye point through the sample point
-            vec3f ray_direction = normalized(pixel_sample_loc - m_settings.m_position);
-            Ray   ray(m_settings.m_position, ray_direction);
-            render_target.render_target[c + r * m_settings.m_image_width] = ray_color(ray, aggregate);
+            rgb_color sampled_color(0.0f, 0.0f, 0.0f);
+            for (u32 sample = 0; sample < m_settings.m_samples_per_pixel; ++sample)
+            {
+                // Jitter the ray around the pixel center
+                sampled_color += ray_color(jittered_ray(u, v), aggregate);
+            }
+            render_target.render_target[u + v * m_settings.m_image_width] = sampled_color * m_settings.m_sampling_scale;
         }
     }
+}
+
+vec3f Camera::sample_square() const
+{
+    return vec3f(random(-0.5f, 0.5f), random(-0.5f, 0.5f), 0.0f);
+}
+
+Ray Camera::jittered_ray(u32 u, u32 v)
+{
+    vec3f jitter_offset = sample_square();
+
+    vec3f sample_loc = m_settings.m_pixel_00_loc + ((u + jitter_offset[0]) * m_settings.m_pixel_delta_u) +
+                       ((v + jitter_offset[1]) * m_settings.m_pixel_delta_v);
+    vec3f ray_direction = normalized(sample_loc - m_settings.m_position);
+    return Ray (m_settings.m_position, ray_direction);
+    
 }
 
 } // namespace radiant

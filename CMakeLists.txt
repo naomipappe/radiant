@@ -16,6 +16,4 @@ add_executable(radiant ${RADIANT_SOURCES})
 add_subdirectory(external)
 
 target_include_directories(radiant PRIVATE include)
-target_link_libraries(radiant PRIVATE stb)
-
-target_link_directories(radiant PRIVATE fmt)
+target_link_libraries(radiant PRIVATE stb fmt::fmt)

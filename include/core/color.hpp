@@ -16,17 +16,14 @@ struct rgb_color : public vec3f
     // This is stupid, but it works
     rgb_color(const vec3f& base) : vec3f(base) {}
 
-    u8 r() const { return std::clamp(static_cast<u32>(m_data[0] * 255), static_cast<u32>(0), static_cast<u32>(255)); }
-    u8 g() const { return std::clamp(static_cast<u32>(m_data[1] * 255), static_cast<u32>(0), static_cast<u32>(255)); }
-    u8 b() const { return std::clamp(static_cast<u32>(m_data[2] * 255), static_cast<u32>(0), static_cast<u32>(255)); }
+    u8 r() const { return std::clamp(m_data[0], 0.0f, 0.999f) * 256; }
+    u8 g() const { return std::clamp(m_data[1], 0.0f, 0.999f) * 256; }
+    u8 b() const { return std::clamp(m_data[2], 0.0f, 0.999f) * 256; }
 };
 
 inline std::ostream& operator<<(std::ostream& out, const rgb_color& color)
 {
-    for (u32 i = 0; i < 3; ++i)
-    {
-        out << std::clamp(static_cast<u32>(color[i] * 255), static_cast<u32>(0), static_cast<u32>(255)) << ' ';
-    }
+    out << color.r() << ' ' << color.g() << ' ' << color.b();
     return out;
 }
 
