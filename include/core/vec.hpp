@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <core/types.hpp>
 
@@ -32,7 +33,8 @@ struct vec
     T m_data[N];
 
     vec() : m_data{} {}
-    explicit vec(const T* data) { memcpy(m_data, data, sizeof(T) * N); }
+    explicit vec(const T* data) { std::copy(data, data + N, m_data); }
+    explicit vec(const T value) { std::fill(m_data, m_data + N, value); }
 
     template <typename... Args>
     constexpr explicit vec(Args&&... args) : m_data{ static_cast<T>(std::forward<Args>(args))... }

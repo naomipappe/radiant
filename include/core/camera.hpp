@@ -38,7 +38,7 @@ class Camera
 
   private:
     void      init(const CameraSettings& settings);
-    rgb_color ray_color(const Ray& ray, const Aggregate* aggregate);
+    rgb_color ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce, u32 bounces = 10);
     vec3f     sample_square() const;
     Ray       jittered_ray(u32 u, u32 v);
 };

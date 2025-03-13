@@ -22,8 +22,8 @@ int main()
     Camera camera;
 
     // Populate the scene
-    Sphere          small(vec3f(0.0f, 0.0f, -2.0f), 0.5f);
-    Sphere          big(vec3f(0.0f, -100.5f, -2.0f), 100.0f);
+    Sphere          small(vec3f(0.0f, 0.0f, -1.0f), 0.5f);
+    Sphere          big(vec3f(0.0f, -100.5f, -1.0f), 100.0f);
     LinearAggregate aggregate;
     aggregate.insert(&small);
     aggregate.insert(&big);

@@ -9,7 +9,7 @@
 
 #include <logging/logging.hpp>
 
-#include <core/probability/distributions.hpp>
+#include <core/probability/sampling.hpp>
 
 namespace radiant
 {
@@ -43,14 +43,18 @@ void Camera::init(const CameraSettings& settings)
     m_settings.m_sampling_scale = 1.0f / m_settings.m_samples_per_pixel;
 }
 
-rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate)
+rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce, u32 bounces)
 {
+    if (bounce >= bounces)
+    {
+        return rgb_color(0.0f);
+    }
     // This returns a "point of contact" along the ray
-    std::optional<Intersection> intersection = aggregate->intersect(ray, 0, inf);
+    std::optional<Intersection> intersection = aggregate->intersect(ray, 1e-3f, inf);
     if (intersection)
     {
-        vec3f n = (intersection->m_normal + 1.0f) * 0.5f;
-        return n;
+        vec3f reflected = sample_sphere_hemisphere_rejection(intersection->m_normal);
+        return 0.5f * ray_color(Ray(intersection->m_intersection, reflected), aggregate, bounce + 1);
     }
 
     vec3f udir  = normalized(ray.m_direction);
@@ -78,7 +82,7 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
             for (u32 sample = 0; sample < m_settings.m_samples_per_pixel; ++sample)
             {
                 // Jitter the ray around the pixel center
-                sampled_color += ray_color(jittered_ray(u, v), aggregate);
+                sampled_color += ray_color(jittered_ray(u, v), aggregate, 0);
             }
             render_target.render_target[u + v * m_settings.m_image_width] = sampled_color * m_settings.m_sampling_scale;
         }
@@ -97,8 +101,7 @@ Ray Camera::jittered_ray(u32 u, u32 v)
     vec3f sample_loc = m_settings.m_pixel_00_loc + ((u + jitter_offset[0]) * m_settings.m_pixel_delta_u) +
                        ((v + jitter_offset[1]) * m_settings.m_pixel_delta_v);
     vec3f ray_direction = normalized(sample_loc - m_settings.m_position);
-    return Ray (m_settings.m_position, ray_direction);
-    
+    return Ray(m_settings.m_position, ray_direction);
 }
 
 } // namespace radiant
