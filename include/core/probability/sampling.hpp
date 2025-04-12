@@ -28,7 +28,7 @@ T random(T min, T max)
 template <typename T, size_t N>
 vec<T, N> random_vec()
 {
-    vec<T, N> v;
+    vec<T, N> v{};
     for (u32 i = 0; i < N; ++i)
     {
         v[i] = random<T>();
