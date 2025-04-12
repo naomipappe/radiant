@@ -49,11 +49,11 @@ rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 boun
     {
         return rgb_color(0.0f);
     }
-    // This returns a "point of contact" along the ray
+
     std::optional<Intersection> intersection = aggregate->intersect(ray, 1e-3f, inf);
     if (intersection)
     {
-        vec3f reflected = sample_sphere_hemisphere_rejection(intersection->m_normal);
+        vec3f reflected = intersection->m_normal + random_vec<f32,3>().normalize();
         return 0.5f * ray_color(Ray(intersection->m_intersection, reflected), aggregate, bounce + 1);
     }
 
