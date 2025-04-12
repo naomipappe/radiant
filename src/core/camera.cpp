@@ -5,11 +5,14 @@
 #include "core/render_target.hpp"
 #include "core/types.hpp"
 #include "core/vec.hpp"
+#include "core/material.hpp"
+#include <cassert>
 #include <core/camera.hpp>
 
 #include <logging/logging.hpp>
 
 #include <core/probability/sampling.hpp>
+#include <optional>
 
 namespace radiant
 {
@@ -53,8 +56,19 @@ rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 boun
     std::optional<Intersection> intersection = aggregate->intersect(ray, 1e-3f, inf);
     if (intersection)
     {
-        vec3f reflected = intersection->m_normal + random_vec<f32,3>().normalize();
-        return 0.5f * ray_color(Ray(intersection->m_intersection, reflected), aggregate, bounce + 1);
+        Ray       ray{};
+        rgb_color color{};
+
+        assert(intersection->m_material != nullptr);
+        std::optional<Ray> scattered = intersection->m_material->scatter(ray, intersection.value(), color);
+        if (scattered)
+        {
+            return color * ray_color(scattered.value(), aggregate, bounce + 1);
+        }
+        else
+        {
+            return rgb_color(0.0f, 0.0f, 0.0f);
+        }
     }
 
     vec3f udir  = normalized(ray.m_direction);
