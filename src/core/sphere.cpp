@@ -1,9 +1,13 @@
+#include <cmath>
 #include <core/sphere.hpp>
 #include <cassert>
 
 namespace radiant
 {
-Sphere::Sphere(const vec3f& center, f32 radius) : m_center(center), m_radius(std::fmax(0, radius)) {}
+Sphere::Sphere(const vec3f& center, f32 radius) : m_center(center), m_radius(std::fmax(0, radius)), m_material(nullptr) {}
+
+Sphere::Sphere(const vec3f& center, f32 radius, Material* material) :
+    m_center(center), m_radius(std::fmax(0, radius)), m_material(material) {};
 
 bool Sphere::test_intersection(const Ray& r, f32 tmin, f32 tmax) const
 {
@@ -46,6 +50,6 @@ std::optional<Intersection> Sphere::intersect(const Ray& r, f32 tmin, f32 tmax) 
     vec3f p              = r.at(root);
     vec3f outward_normal = (p - m_center) / m_radius;
 
-    return std::make_optional<Intersection>(p, outward_normal, root);
+    return std::make_optional<Intersection>(p, outward_normal, root, m_material);
 }
 } // namespace radiant

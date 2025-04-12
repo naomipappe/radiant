@@ -26,7 +26,7 @@ T random(T min, T max)
 }
 
 template <typename T, size_t N>
-vec<T, N> random_vec()
+vec<T, N> random()
 {
     vec<T, N> v{};
     for (u32 i = 0; i < N; ++i)
@@ -37,7 +37,7 @@ vec<T, N> random_vec()
 }
 
 template <typename T, size_t N>
-vec<T, N> random_vec(T min, T max)
+vec<T, N> random(T min, T max)
 {
     vec<T, N> v;
     for (u32 i = 0; i < N; ++i)
@@ -55,7 +55,7 @@ inline vec3f sample_sphere_hemisphere_rejection(const vec3f& normal)
     vec3f random_unit_vector;
     while (true)
     {
-        vec3f p              = random_vec<f32, 3>(-1.0f, 1.0f);
+        vec3f p              = random<f32, 3>(-1.0f, 1.0f);
         f32   length_squared = p.length_squared();
         if (std::numeric_limits<f32>::epsilon() <= length_squared && length_squared <= 1.0f)
         {

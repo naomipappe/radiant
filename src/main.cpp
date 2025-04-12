@@ -1,5 +1,6 @@
 #include "core/camera.hpp"
 #include "core/color.hpp"
+#include "core/material.hpp"
 #include "core/render_target.hpp"
 #include <cstdio>
 #include <garbage/garbage_dump.hpp>
@@ -22,11 +23,21 @@ int main()
     Camera camera;
 
     // Populate the scene
-    Sphere          small(vec3f(0.0f, 0.0f, -1.0f), 0.5f);
-    Sphere          big(vec3f(0.0f, -100.5f, -1.0f), 100.0f);
+    Lambertian material_ground(rgb_color(0.8f, 0.8f, 0.0f));
+    Lambertian material_center(rgb_color(0.1f, 0.2f, 0.5f));
+    Metal      material_left  = Metal(rgb_color(0.8f, 0.8f, 0.8f));
+    Metal      material_right = Metal(rgb_color(0.8f, 0.6f, 0.2f));
+
+    Sphere ground(vec3f(0.0f, -100.5f, -1.0f), 100.0f, &material_ground);
+    Sphere left(vec3f(-1.0f, 0.0f, -1.0f), 0.5f, &material_left);
+    Sphere center(vec3f(0.0f, 0.0f, -1.0f), 0.5f, &material_center);
+    Sphere right(vec3f(1.0f, 0.0f, -1.0f), 0.5f, &material_right);
+
     LinearAggregate aggregate;
-    aggregate.insert(&small);
-    aggregate.insert(&big);
+    aggregate.insert(&left);
+    aggregate.insert(&center);
+    aggregate.insert(&right);
+    aggregate.insert(&ground);
 
     // Render the scene to the image buffer
     RenderTarget target{};

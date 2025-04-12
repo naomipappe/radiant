@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
-#include <memory>
 
 #include <stb_image_write.h>
 
@@ -16,6 +15,7 @@ f32 linear_to_gamma(f32 linear_component)
     {
         return std::sqrt(linear_component);
     }
+    return 0.0f;
 }
 
 void write_ppm(const u32* bytes, u32 width, u32 height, std::filesystem::path& destination)

@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include <core/types.hpp>
+#include <cstdint>
+#include <ratio>
 
 namespace radiant
 {
@@ -43,6 +45,17 @@ struct vec
     }
     const T& operator[](u32 i) const { return m_data[i]; };
     T&       operator[](u32 i) { return m_data[i]; };
+
+    bool is_zero() const
+    {
+        f32  precision = 1e-8;
+        bool result    = true;
+        for (uint32_t i = 0; i < N; ++i)
+        {
+            result = result && (std::fabs(m_data[i]) < precision);
+        }
+        return result;
+    }
 
     vec operator-() const
     {
@@ -257,5 +270,11 @@ template <typename T, size_t N>
 vec<T, N> normalized(const vec<T, N>& v)
 {
     return v / v.length();
+}
+
+template <typename T>
+vec<T, 3> reflect(const vec<T, 3>& v, const vec<T, 3>& n)
+{
+    return v - 2.0f * dot(v, n) * n;
 }
 } // namespace radiant
