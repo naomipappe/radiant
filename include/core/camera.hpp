@@ -22,7 +22,7 @@ struct CameraSettings
 
     f32 m_focal_length{ 1.0 };
 
-    u32 m_samples_per_pixel{ 4 };
+    u32 m_samples_per_pixel{ 16 };
     f32 m_sampling_scale = 1.0f / m_samples_per_pixel;
 };
 
