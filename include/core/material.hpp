@@ -36,7 +36,7 @@ class Lambertian : public Material
 class Metal : public Material
 {
   public:
-    Metal(const rgb_color& albedo);
+    Metal(const rgb_color& albedo, f32 roughness);
 
     std::optional<radiant::Ray>
     scatter(const radiant::Ray& ray, const Intersection& intersection, radiant::rgb_color& attenuation) const override;
@@ -44,5 +44,6 @@ class Metal : public Material
 
   private:
     rgb_color m_albedo; // Notice that both materials have albedo
+    f32       m_roughness;
 };
 }; // namespace radiant

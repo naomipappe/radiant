@@ -2,6 +2,7 @@
 #include "core/probability/sampling.hpp"
 #include "core/ray.hpp"
 #include "core/vec.hpp"
+#include <algorithm>
 #include <core/material.hpp>
 #include <optional>
 namespace radiant
@@ -21,17 +22,18 @@ Lambertian::scatter(const radiant::Ray& ray, const Intersection& intersection, r
     return std::make_optional<Ray>(intersection.m_intersection, scattering_direction);
 }
 
-Metal::Metal(const rgb_color& albedo) : m_albedo(albedo) {}
+Metal::Metal(const rgb_color& albedo, f32 roughness) : m_albedo(albedo), m_roughness(std::clamp(roughness, 0.0f, 1.0f)) {}
 
 std::optional<radiant::Ray>
 Metal::scatter(const radiant::Ray& ray, const Intersection& intersection, radiant::rgb_color& attenuation) const
 {
-    vec3f reflected = reflect(ray.m_direction, intersection.m_normal);
-    if (reflected.is_zero())
+    vec3f reflected = reflect(ray.m_direction, intersection.m_normal).normalize();
+    reflected += random<f32, 3>() * m_roughness;
+    attenuation = m_albedo;
+    if (dot(reflected, intersection.m_normal) <= 0)
     {
-        reflected = intersection.m_normal;
+        return std::nullopt;
     }
-    attenuation     = m_albedo;
     return std::make_optional<radiant::Ray>(intersection.m_intersection, reflected);
 }
 

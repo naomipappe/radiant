@@ -56,8 +56,7 @@ rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 boun
     std::optional<Intersection> intersection = aggregate->intersect(ray, 1e-3f, inf);
     if (intersection)
     {
-        Ray       ray{};
-        rgb_color color{};
+        rgb_color color{ 0.0f, 0.0f, 0.0f };
 
         assert(intersection->m_material != nullptr);
         std::optional<Ray> scattered = intersection->m_material->scatter(ray, intersection.value(), color);

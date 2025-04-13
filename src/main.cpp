@@ -25,8 +25,8 @@ int main()
     // Populate the scene
     Lambertian material_ground(rgb_color(0.8f, 0.8f, 0.0f));
     Lambertian material_center(rgb_color(0.1f, 0.2f, 0.5f));
-    Metal      material_left  = Metal(rgb_color(0.8f, 0.8f, 0.8f));
-    Metal      material_right = Metal(rgb_color(0.8f, 0.6f, 0.2f));
+    Metal      material_left  = Metal(rgb_color(0.8f, 0.8f, 0.8f), 0.0f);
+    Metal      material_right = Metal(rgb_color(0.8f, 0.6f, 0.2f), 1.0f);
 
     Sphere ground(vec3f(0.0f, -100.5f, -1.0f), 100.0f, &material_ground);
     Sphere left(vec3f(-1.0f, 0.0f, -1.0f), 0.5f, &material_left);
