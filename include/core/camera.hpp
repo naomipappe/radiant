@@ -24,13 +24,13 @@ struct CameraSettings
 
     u32 m_samples_per_pixel{ 4 };
     f32 m_sampling_scale = 1.0f / m_samples_per_pixel;
+
+    u32 m_ray_bounces{ 50 };
 };
 
 class Camera
 {
   public:
-    CameraSettings m_settings{};
-
     Camera();
     Camera(const CameraSettings& settings);
 
@@ -38,9 +38,12 @@ class Camera
 
   private:
     void      init(const CameraSettings& settings);
-    rgb_color ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce, u32 bounces = 50);
+    rgb_color ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce);
     vec3f     sample_square() const;
     Ray       jittered_ray(u32 u, u32 v);
+
+  private:
+    CameraSettings m_settings{};
 };
 
 } // namespace radiant

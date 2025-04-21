@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include <core/types.hpp>
+#include <cstddef>
 #include <cstdint>
-#include <ratio>
 
 namespace radiant
 {
@@ -277,4 +277,30 @@ vec<T, 3> reflect(const vec<T, 3>& v, const vec<T, 3>& n)
 {
     return v - 2.0f * dot(v, n) * n;
 }
+
+template <typename T>
+vec<T, 3> refract(const vec<T, 3>& v, const vec<T, 3>& n, Scalar effective_refraction_index)
+{
+    Scalar    cos_theta     = std::fmin(dot(-v, n), 1.0);
+    vec<T, 3> perpendicular = effective_refraction_index * (v + cos_theta * n);
+    vec<T, 3> parallel      = -std::sqrt(std::fabs(1 - perpendicular.length_squared())) * n;
+    return perpendicular + parallel;
+}
+
+template <typename T, size_t N>
+vec<T, N> ones()
+{
+    vec<T, N> v;
+    std::fill(v.m_data, v.m_data + N, static_cast<T>(1));
+    return v;
+};
+
+template <typename T, size_t N>
+vec<T, N> zeros()
+{
+    vec<T, N> v;
+    std::fill(v.m_data, v.m_data + N, static_cast<T>(0));
+    return v;
+};
+
 } // namespace radiant

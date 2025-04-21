@@ -2,7 +2,7 @@
 #include "core/color.hpp"
 #include "core/material.hpp"
 #include "core/render_target.hpp"
-#include <cstdio>
+#include "fmt/base.h"
 #include <garbage/garbage_dump.hpp>
 
 #include <core/constants.hpp>
@@ -18,14 +18,14 @@ using namespace radiant;
 
 int main()
 {
-    printf("%s", "Starting Radiant\n");
+    fmt::println("{}", "Starting Radiant");
 
     Camera camera;
 
     // Populate the scene
     Lambertian material_ground(rgb_color(0.8f, 0.8f, 0.0f));
     Lambertian material_center(rgb_color(0.1f, 0.2f, 0.5f));
-    Metal      material_left  = Metal(rgb_color(0.8f, 0.8f, 0.8f), 0.0f);
+    Dielectric material_left  = Dielectric(1.5f);
     Metal      material_right = Metal(rgb_color(0.8f, 0.6f, 0.2f), 1.0f);
 
     Sphere ground(vec3f(0.0f, -100.5f, -1.0f), 100.0f, &material_ground);
