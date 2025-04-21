@@ -46,27 +46,27 @@ void Camera::init(const CameraSettings& settings)
     m_settings.m_sampling_scale = 1.0f / m_settings.m_samples_per_pixel;
 }
 
-rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce, u32 bounces)
+rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce)
 {
-    if (bounce >= bounces)
+    if (bounce >= m_settings.m_ray_bounces)
     {
-        return rgb_color(0.0f);
+        return zeros<f32, 3>();
     }
 
     std::optional<Intersection> intersection = aggregate->intersect(ray, 1e-3f, inf);
     if (intersection)
     {
-        rgb_color color{ 0.0f, 0.0f, 0.0f };
+        rgb_color attenuation = zeros<f32, 3>();
 
         assert(intersection->m_material != nullptr);
-        std::optional<Ray> scattered = intersection->m_material->scatter(ray, intersection.value(), color);
+        std::optional<Ray> scattered = intersection->m_material->scatter(ray, intersection.value(), attenuation);
         if (scattered)
         {
-            return color * ray_color(scattered.value(), aggregate, bounce + 1);
+            return attenuation * ray_color(scattered.value(), aggregate, bounce + 1);
         }
         else
         {
-            return rgb_color(0.0f, 0.0f, 0.0f);
+            return zeros<f32, 3>();
         }
     }
 
@@ -74,6 +74,10 @@ rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 boun
     f32   blend = 0.5f * (udir[1] + 1.0);
 
     rgb_color result = (1.0f - blend) * rgb_color(1.0f, 1.0f, 1.0f) + blend * rgb_color(0.5f, 0.7f, 1.0f);
+    if (result.is_zero() && bounce == 0)
+    {
+        float t = .10;
+    }
     return result;
 }
 
@@ -91,7 +95,7 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
     {
         for (u32 u = 0; u < m_settings.m_image_width; ++u)
         {
-            rgb_color sampled_color(0.0f, 0.0f, 0.0f);
+            rgb_color sampled_color = zeros<Scalar, 3>();
             for (u32 sample = 0; sample < m_settings.m_samples_per_pixel; ++sample)
             {
                 // Jitter the ray around the pixel center
