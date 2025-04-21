@@ -49,17 +49,23 @@ std::optional<Ray> Dielectric::scatter(const Ray& ray, Intersection& intersectio
     vec3f  unit_direction = normalized(ray.m_direction);
     Scalar cos_theta      = std::fmin(dot(-unit_direction, intersection.m_normal), 1.0);
     Scalar sin_theta      = std::sqrt(1 - cos_theta * cos_theta);
-    if (ri * sin_theta > 1.0)
+    if (ri * sin_theta > 1.0 || reflectance(cos_theta, ri) > random<f32>())
     {
         vec3f reflected = reflect(unit_direction, intersection.m_normal);
         return std::make_optional<Ray>(intersection.m_intersection, reflected);
-
     }
     else
     {
         vec3f refracted = refract(unit_direction, intersection.m_normal, ri);
         return std::make_optional<Ray>(intersection.m_intersection, refracted);
     }
+}
+
+f32 Dielectric::reflectance(f32 cosine, f32 refraction_index) const
+{
+    f32 r0 = (1 - refraction_index) / (1 + refraction_index);
+    r0 *= r0;
+    return r0 + (1 - r0) * std::pow(1 - cosine, 5);
 }
 
 } // namespace radiant

@@ -29,7 +29,7 @@ void Camera::init(const CameraSettings& settings)
 {
     f32 viewport_height{ 2.0 };
     // TODO: Figure out why is it done like this
-    f32 viewport_width = viewport_height * m_settings.m_image_width / m_settings.m_image_height;
+    f32 viewport_width = viewport_height * static_cast<f32>(m_settings.m_image_width) / m_settings.m_image_height;
 
     // Calculate viewport spanning vector and viewport pixel deltas
     vec3f viewport_u(viewport_width, 0.0f, 0.0f);

@@ -22,10 +22,10 @@ struct CameraSettings
 
     f32 m_focal_length{ 1.0 };
 
-    u32 m_samples_per_pixel{ 4 };
+    u32 m_samples_per_pixel{ 10 };
     f32 m_sampling_scale = 1.0f / m_samples_per_pixel;
 
-    u32 m_ray_bounces{ 5 };
+    u32 m_ray_bounces{ 10 };
 };
 
 class Camera
