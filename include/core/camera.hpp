@@ -25,7 +25,7 @@ struct CameraSettings
     u32 m_samples_per_pixel{ 4 };
     f32 m_sampling_scale = 1.0f / m_samples_per_pixel;
 
-    u32 m_ray_bounces{ 50 };
+    u32 m_ray_bounces{ 5 };
 };
 
 class Camera

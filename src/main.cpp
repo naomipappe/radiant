@@ -20,17 +20,18 @@ int main()
 {
     fmt::println("{}", "Starting Radiant");
 
-    Camera camera;
+    CameraSettings settings{};
+    Camera         camera(settings);
 
     // Populate the scene
     Lambertian material_ground(rgb_color(0.8f, 0.8f, 0.0f));
     Lambertian material_center(rgb_color(0.1f, 0.2f, 0.5f));
-    Dielectric material_left  = Dielectric(1.5f);
+    Dielectric material_left  = Dielectric(1.0 / 1.33);
     Metal      material_right = Metal(rgb_color(0.8f, 0.6f, 0.2f), 1.0f);
 
     Sphere ground(vec3f(0.0f, -100.5f, -1.0f), 100.0f, &material_ground);
     Sphere left(vec3f(-1.0f, 0.0f, -1.0f), 0.5f, &material_left);
-    Sphere center(vec3f(0.0f, 0.0f, -1.0f), 0.5f, &material_center);
+    Sphere center(vec3f(0.0f, 0.0f, -1.2f), 0.5f, &material_center);
     Sphere right(vec3f(1.0f, 0.0f, -1.0f), 0.5f, &material_right);
 
     LinearAggregate aggregate;
