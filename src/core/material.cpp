@@ -1,3 +1,4 @@
+#include <cmath>
 #include <core/primitive.hpp>
 #include <core/probability/sampling.hpp>
 #include <core/ray.hpp>
@@ -45,8 +46,20 @@ std::optional<Ray> Dielectric::scatter(const Ray& ray, Intersection& intersectio
         intersection.m_normal = -intersection.m_normal;
     }
 
-    vec3f refracted = refract(normalized(ray.m_direction), intersection.m_normal, ri);
-    return std::make_optional<Ray>(intersection.m_intersection, refracted);
+    vec3f  unit_direction = normalized(ray.m_direction);
+    Scalar cos_theta      = std::fmin(dot(-unit_direction, intersection.m_normal), 1.0);
+    Scalar sin_theta      = std::sqrt(1 - cos_theta * cos_theta);
+    if (ri * sin_theta > 1.0)
+    {
+        vec3f reflected = reflect(unit_direction, intersection.m_normal);
+        return std::make_optional<Ray>(intersection.m_intersection, reflected);
+
+    }
+    else
+    {
+        vec3f refracted = refract(unit_direction, intersection.m_normal, ri);
+        return std::make_optional<Ray>(intersection.m_intersection, refracted);
+    }
 }
 
 } // namespace radiant
