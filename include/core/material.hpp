@@ -53,6 +53,9 @@ class Dielectric : public Material
     virtual ~Dielectric() {};
 
   private:
+    f32 reflectance(f32 cosine, f32 refraction_index) const;
+
+  private:
     Scalar m_effective_refraction_index;
 };
 }; // namespace radiant
