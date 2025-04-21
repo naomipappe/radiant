@@ -43,8 +43,8 @@ int main()
     RenderTarget target{};
     camera.render(&aggregate, target);
 
-    std::filesystem::path destination("test.jpg");
-    garbage::write_jpg(target.render_target.data(), target.width, target.height, destination);
+    std::filesystem::path destination("test.png");
+    garbage::write_png(target.render_target.data(), target.width, target.height, destination);
 
     return 0;
 }
