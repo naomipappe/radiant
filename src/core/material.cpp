@@ -40,10 +40,13 @@ std::optional<Ray> Dielectric::scatter(const Ray& ray, Intersection& intersectio
 {
     attenuation = ones<Scalar, 3>();
     Scalar ri   = m_effective_refraction_index;
-    if (dot(ray.m_direction, intersection.m_normal) < 0)
+    if (dot(ray.m_direction, intersection.m_normal) > 0)
     {
-        ri                    = 1.0 / ri;
         intersection.m_normal = -intersection.m_normal;
+    }
+    else
+    {
+        ri = 1.0 / ri;
     }
 
     vec3f  unit_direction = normalized(ray.m_direction);
