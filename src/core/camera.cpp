@@ -28,23 +28,29 @@ Camera::Camera(const CameraSettings& settings) : m_settings(settings)
 
 void Camera::init(const CameraSettings& settings)
 {
+    m_settings.m_image_height   = std::max(1u, u32(m_settings.m_image_width / m_settings.m_aspect_ratio));
+    m_settings.m_sampling_scale = 1.0f / m_settings.m_samples_per_pixel;
+
+    m_settings.m_position     = m_settings.m_look_from;
+    m_settings.m_focal_length = (m_settings.m_look_from - m_settings.m_look_at).length();
+
     f32 viewport_height{ 2.0f * settings.m_focal_length * std::tan(deg_to_rad(settings.m_vfow_deg) / 2) };
     // TODO: Figure out why is it done like this
     f32 viewport_width = viewport_height * static_cast<f32>(m_settings.m_image_width) / m_settings.m_image_height;
 
+    w = normalized(m_settings.m_look_from - m_settings.m_look_at);
+    u = normalized(cross(m_settings.m_world_up, w));
+    v = cross(w, u);
     // Calculate viewport spanning vector and viewport pixel deltas
-    vec3f viewport_u(viewport_width, 0.0f, 0.0f);
-    vec3f viewport_v(0, -viewport_height, 0);
+    vec3f viewport_u = viewport_width * u;
+    vec3f viewport_v = -v * viewport_height;
 
     m_settings.m_pixel_delta_u = viewport_u / m_settings.m_image_width;
     m_settings.m_pixel_delta_v = viewport_v / m_settings.m_image_height;
 
     // TODO: Check this math
-    vec3f viewport_origin =
-        m_settings.m_position - vec3f(0.0f, 0.0f, m_settings.m_focal_length) - viewport_u / 2 - viewport_v / 2;
+    vec3f viewport_origin     = m_settings.m_position - (m_settings.m_focal_length * w) - viewport_u / 2 - viewport_v / 2;
     m_settings.m_pixel_00_loc = viewport_origin + 0.5f * (m_settings.m_pixel_delta_u + m_settings.m_pixel_delta_v);
-
-    m_settings.m_sampling_scale = 1.0f / m_settings.m_samples_per_pixel;
 }
 
 rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce)
@@ -75,10 +81,6 @@ rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 boun
     f32   blend = 0.5f * (udir[1] + 1.0);
 
     rgb_color result = (1.0f - blend) * rgb_color(1.0f, 1.0f, 1.0f) + blend * rgb_color(0.5f, 0.7f, 1.0f);
-    if (result.is_zero() && bounce == 0)
-    {
-        float t = .10;
-    }
     return result;
 }
 

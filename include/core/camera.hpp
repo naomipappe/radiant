@@ -9,6 +9,9 @@
 
 namespace radiant
 {
+
+// Split this into camera internal and external variables
+// Something we should be able to set, something - not
 struct CameraSettings
 {
     f32 m_aspect_ratio{ 16.0 / 9.0 };
@@ -27,7 +30,10 @@ struct CameraSettings
 
     u32 m_ray_bounces{ 10 };
 
-    f32 m_vfow_deg{ 90 };
+    f32   m_vfow_deg{ 90 };
+    vec3f m_look_from{ 0.0f, 0.0f, 0.0f };
+    vec3f m_look_at{ 0.0f, 0.0f, -1.0f };
+    vec3f m_world_up{ 0.0f, 1.0f, 0.0f };
 };
 
 class Camera
@@ -46,6 +52,8 @@ class Camera
 
   private:
     CameraSettings m_settings{};
+    // Internal camera frame basis
+    vec3f u, v, w;
 };
 
 } // namespace radiant
