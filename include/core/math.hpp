@@ -1,0 +1,18 @@
+#pragma once
+
+#include <limits>
+#include <cmath>
+#include "core/types.hpp"
+
+namespace radiant
+{
+const f32 inf  = std::numeric_limits<f32>::infinity();
+const f32 PI   = 3.1415926535897932385;
+const f32 PI_2 = PI / 2;
+const f32 PI_3 = PI / 3;
+const f32 PI_4 = PI / 4;
+const f32 PI_6 = PI / 6;
+
+f32 deg_to_rad(f32 degrees);
+f32 rad_to_get(f32 radians);
+} // namespace radiant

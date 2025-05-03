@@ -1,6 +1,7 @@
 #include "core/camera.hpp"
 #include "core/color.hpp"
 #include "core/material.hpp"
+#include "core/math.hpp"
 #include "core/render_target.hpp"
 #include "fmt/base.h"
 #include <garbage/garbage_dump.hpp>
@@ -21,7 +22,11 @@ int main()
     fmt::println("{}", "Starting Radiant");
 
     CameraSettings settings{};
-    Camera         camera(settings);
+    settings.m_samples_per_pixel = 4;
+    settings.m_ray_bounces       = 50;
+    settings.m_vfow_deg          = 120;
+
+    Camera camera(settings);
 
     // Populate the scene
     Lambertian material_ground(rgb_color(0.8f, 0.8f, 0.0f));
