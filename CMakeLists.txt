@@ -11,7 +11,8 @@ src/garbage/garbage_dump.cpp
 src/core/sphere.cpp
 src/core/linear_aggregate.cpp
 src/core/camera.cpp
-src/core/material.cpp)
+src/core/material.cpp
+src/core/math.cpp)
 
 add_executable(radiant ${RADIANT_SOURCES})
 add_subdirectory(external)

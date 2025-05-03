@@ -1,12 +1,13 @@
 #include "core/acceleration_structures/aggregate.hpp"
 #include "core/color.hpp"
-#include "core/constants.hpp"
+#include "core/math.hpp"
 #include "core/ray.hpp"
 #include "core/render_target.hpp"
 #include "core/types.hpp"
 #include "core/vec.hpp"
 #include "core/material.hpp"
 #include <cassert>
+#include <cmath>
 #include <core/camera.hpp>
 
 #include <logging/logging.hpp>
@@ -27,7 +28,7 @@ Camera::Camera(const CameraSettings& settings) : m_settings(settings)
 
 void Camera::init(const CameraSettings& settings)
 {
-    f32 viewport_height{ 2.0 };
+    f32 viewport_height{ 2.0f * settings.m_focal_length * std::tan(deg_to_rad(settings.m_vfow_deg) / 2) };
     // TODO: Figure out why is it done like this
     f32 viewport_width = viewport_height * static_cast<f32>(m_settings.m_image_width) / m_settings.m_image_height;
 
