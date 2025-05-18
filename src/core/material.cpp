@@ -15,7 +15,7 @@ Lambertian::Lambertian(const rgb_color& albedo) : m_albedo(albedo) {}
 
 std::optional<Ray> Lambertian::scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const
 {
-    vec3f scattering_direction = intersection.m_normal + random<f32, 3>().normalize();
+    vec3 scattering_direction = intersection.m_normal + random<Scalar, 3>().normalize();
     if (scattering_direction.is_zero())
     {
         scattering_direction = intersection.m_normal;
@@ -24,12 +24,12 @@ std::optional<Ray> Lambertian::scatter(const Ray& ray, Intersection& intersectio
     return std::make_optional<Ray>(intersection.m_intersection, scattering_direction);
 }
 
-Metal::Metal(const rgb_color& albedo, f32 roughness) : m_albedo(albedo), m_roughness(std::clamp(roughness, 0.0f, 1.0f)) {}
+Metal::Metal(const rgb_color& albedo, Scalar roughness) : m_albedo(albedo), m_roughness(std::clamp(roughness, 0.0, 1.0)) {}
 
 std::optional<Ray> Metal::scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const
 {
-    vec3f reflected = reflect(ray.m_direction, intersection.m_normal).normalize();
-    reflected += random<f32, 3>() * m_roughness;
+    vec3 reflected = reflect(ray.m_direction, intersection.m_normal).normalize();
+    reflected += random<Scalar, 3>() * m_roughness;
     attenuation = m_albedo;
     return std::make_optional<Ray>(intersection.m_intersection, reflected);
 }
@@ -49,24 +49,24 @@ std::optional<Ray> Dielectric::scatter(const Ray& ray, Intersection& intersectio
         ri = 1.0 / ri;
     }
 
-    vec3f  unit_direction = normalized(ray.m_direction);
+    vec3   unit_direction = normalized(ray.m_direction);
     Scalar cos_theta      = std::fmin(dot(-unit_direction, intersection.m_normal), 1.0);
     Scalar sin_theta      = std::sqrt(1 - cos_theta * cos_theta);
-    if (ri * sin_theta > 1.0 || reflectance(cos_theta, ri) > random<f32>())
+    if (ri * sin_theta > 1.0 || reflectance(cos_theta, ri) > random<Scalar>())
     {
-        vec3f reflected = reflect(unit_direction, intersection.m_normal);
+        vec3 reflected = reflect(unit_direction, intersection.m_normal);
         return std::make_optional<Ray>(intersection.m_intersection, reflected);
     }
     else
     {
-        vec3f refracted = refract(unit_direction, intersection.m_normal, ri);
+        vec3 refracted = refract(unit_direction, intersection.m_normal, ri);
         return std::make_optional<Ray>(intersection.m_intersection, refracted);
     }
 }
 
-f32 Dielectric::reflectance(f32 cosine, f32 refraction_index) const
+Scalar Dielectric::reflectance(Scalar cosine, Scalar refraction_index) const
 {
-    f32 r0 = (1 - refraction_index) / (1 + refraction_index);
+    Scalar r0 = (1 - refraction_index) / (1 + refraction_index);
     r0 *= r0;
     return r0 + (1 - r0) * std::pow(1 - cosine, 5);
 }

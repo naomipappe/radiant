@@ -10,7 +10,7 @@
 namespace radiant::garbage
 {
 
-f32 linear_to_gamma(f32 linear_component)
+Scalar linear_to_gamma(Scalar linear_component)
 {
     if (linear_component > 0)
     {
@@ -49,9 +49,9 @@ void write_png(const rgb_color* pixels, u32 width, u32 height, std::filesystem::
     std::vector<u8> converted_data(width * height * 3, 0);
     for (int i = 0; i < width * height; i++)
     {
-        converted_data[i * 3 + 0] = std::clamp(linear_to_gamma(pixels[i].r()), 0.0f, 1.0f) * 255; // R
-        converted_data[i * 3 + 1] = std::clamp(linear_to_gamma(pixels[i].g()), 0.0f, 1.0f) * 255; // G
-        converted_data[i * 3 + 2] = std::clamp(linear_to_gamma(pixels[i].b()), 0.0f, 1.0f) * 255; // B
+        converted_data[i * 3 + 0] = std::clamp(linear_to_gamma(pixels[i].r()), 0.0, 1.0) * 255; // R
+        converted_data[i * 3 + 1] = std::clamp(linear_to_gamma(pixels[i].g()), 0.0, 1.0) * 255; // G
+        converted_data[i * 3 + 2] = std::clamp(linear_to_gamma(pixels[i].b()), 0.0, 1.0) * 255; // B
     }
 
     stbi_write_png(temporary.c_str(), width, height, 3, converted_data.data(), width * 3);
@@ -67,9 +67,9 @@ void write_jpg(const rgb_color* pixels, u32 width, u32 height, std::filesystem::
     std::vector<u8> converted_data(width * height * 3, 0);
     for (int i = 0; i < width * height; i++)
     {
-        converted_data[i * 3 + 0] = std::clamp(linear_to_gamma(pixels[i].r()), 0.0f, 1.0f) * 255; // R
-        converted_data[i * 3 + 1] = std::clamp(linear_to_gamma(pixels[i].g()), 0.0f, 1.0f) * 255; // G
-        converted_data[i * 3 + 2] = std::clamp(linear_to_gamma(pixels[i].b()), 0.0f, 1.0f) * 255; // B
+        converted_data[i * 3 + 0] = std::clamp(linear_to_gamma(pixels[i].r()), 0.0, 1.0) * 255; // R
+        converted_data[i * 3 + 1] = std::clamp(linear_to_gamma(pixels[i].g()), 0.0, 1.0) * 255; // G
+        converted_data[i * 3 + 2] = std::clamp(linear_to_gamma(pixels[i].b()), 0.0, 1.0) * 255; // B
     }
 
     stbi_write_jpg(temporary.c_str(), width, height, 3, converted_data.data(), 80);

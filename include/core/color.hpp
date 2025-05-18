@@ -8,17 +8,17 @@ namespace radiant
 {
 // TODO: Always convert the data before presenting or keep the data in a particular format
 
-struct rgb_color : public vec3f
+struct rgb_color : public vec3
 {
-    using vec3f::vec3f;
+    using vec3::vec3;
 
-    rgb_color() : vec3f(0.0f, 0.0f, 0.0f) {}
+    rgb_color() : vec3(0.0, 0.0, 0.0) {}
     // This is stupid, but it works
-    rgb_color(const vec3f& base) : vec3f(base) {}
+    rgb_color(const vec3& base) : vec3(base) {}
 
-    f32 r() const { return m_data[0]; }
-    f32 g() const { return m_data[1]; }
-    f32 b() const { return m_data[2]; }
+    Scalar r() const { return m_data[0]; }
+    Scalar g() const { return m_data[1]; }
+    Scalar b() const { return m_data[2]; }
 };
 
 inline std::ostream& operator<<(std::ostream& out, const rgb_color& color)

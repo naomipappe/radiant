@@ -4,7 +4,8 @@
 #include <cmath>
 #include <core/types.hpp>
 #include <cstddef>
-#include <cstdint>
+#include <limits>
+#include <type_traits>
 
 namespace radiant
 {
@@ -13,9 +14,13 @@ namespace radiant
 template <typename T, size_t N>
 struct vec;
 
-using vec2f = vec<f32, 2>;
-using vec3f = vec<f32, 3>;
-using vec4f = vec<f32, 4>;
+using vec2 = vec<Scalar, 2>;
+using vec3 = vec<Scalar, 3>;
+using vec4 = vec<Scalar, 4>;
+
+using vec2f = vec<Scalar, 2>;
+using vec3f = vec<Scalar, 3>;
+using vec4f = vec<Scalar, 4>;
 
 using vec2d = vec<f64, 2>;
 using vec3d = vec<f64, 3>;
@@ -48,11 +53,10 @@ struct vec
 
     bool is_zero() const
     {
-        f32  precision = 1e-8;
-        bool result    = true;
-        for (uint32_t i = 0; i < N; ++i)
+        bool result = true;
+        for (u32 i = 0; i < N; ++i)
         {
-            result = result && (std::fabs(m_data[i]) < precision);
+            result = result && (std::fabs(m_data[i]) < std::numeric_limits<Scalar>::epsilon());
         }
         return result;
     }
@@ -130,9 +134,9 @@ struct vec
         return *this;
     }
 
-    f32 dot(const vec& v) const
+    T dot(const vec& v) const
     {
-        f32 result = 0.0f;
+        T result = 0.0f;
         for (u32 i = 0; i < N; ++i)
         {
             result += m_data[i] * v.m_data[i];
@@ -146,8 +150,8 @@ struct vec
         return *this;
     }
 
-    f32 length() const { return std::sqrt(dot(*this)); }
-    f32 length_squared() const { return dot(*this); }
+    Scalar length() const { return std::sqrt(dot(*this)); }
+    Scalar length_squared() const { return dot(*this); }
 };
 
 template <typename T, size_t N>
@@ -216,8 +220,11 @@ vec<T, N> operator/(const vec<T, N>& a, const vec<T, N>& b)
     return result;
 }
 
-template <typename T, size_t N>
-vec<T, N> operator*(const vec<T, N>& a, f32 t)
+template <typename V>
+concept ScalarT = std::is_integral_v<V> || std::is_floating_point_v<V>;
+
+template <typename T, ScalarT V, size_t N>
+vec<T, N> operator*(const vec<T, N>& a, V t)
 {
     vec<T, N> result;
     for (u32 i = 0; i < N; ++i)
@@ -227,19 +234,14 @@ vec<T, N> operator*(const vec<T, N>& a, f32 t)
     return result;
 }
 
-template <typename T, size_t N>
-vec<T, N> operator*(f32 t, const vec<T, N>& a)
+template <typename T, ScalarT V, size_t N>
+vec<T, N> operator*(V t, const vec<T, N>& a)
 {
-    vec<T, N> result;
-    for (u32 i = 0; i < N; ++i)
-    {
-        result[i] = a[i] * t;
-    }
-    return result;
+    return a * t;
 }
 
-template <typename T, size_t N>
-vec<T, N> operator/(const vec<T, N>& a, f32 t)
+template <typename T, typename V, size_t N>
+vec<T, N> operator/(const vec<T, N>& a, V t)
 {
     vec<T, N> result;
     for (u32 i = 0; i < N; ++i)

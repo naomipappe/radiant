@@ -29,44 +29,44 @@ Camera::Camera(const CameraSettings& settings) : m_settings(settings)
 void Camera::init(const CameraSettings& settings)
 {
     m_settings.m_image_height   = std::max(1u, u32(m_settings.m_image_width / m_settings.m_aspect_ratio));
-    m_settings.m_sampling_scale = 1.0f / m_settings.m_samples_per_pixel;
+    m_settings.m_sampling_scale = 1.0 / m_settings.m_samples_per_pixel;
 
     m_settings.m_position = m_settings.m_look_from;
 
-    f32 viewport_height = 2.0f * settings.m_focus_distance * std::tan(deg_to_rad(settings.m_vfow_deg) / 2);
+    Scalar viewport_height = 2.0 * settings.m_focus_distance * std::tan(deg_to_rad(settings.m_vfow_deg) / 2);
     // TODO: Figure out why is it done like this
-    f32 viewport_width = viewport_height * static_cast<f32>(m_settings.m_image_width) / m_settings.m_image_height;
+    Scalar viewport_width = viewport_height * static_cast<Scalar>(m_settings.m_image_width) / m_settings.m_image_height;
 
     m_w = normalized(m_settings.m_look_from - m_settings.m_look_at);
     m_u = normalized(cross(m_settings.m_world_up, m_w));
     m_v = cross(m_w, m_u);
     // Calculate viewport spanning vector and viewport pixel deltas
-    vec3f viewport_u = viewport_width * m_u;
-    vec3f viewport_v = -m_v * viewport_height;
+    vec3 viewport_u = viewport_width * m_u;
+    vec3 viewport_v = -m_v * viewport_height;
 
     m_settings.m_pixel_delta_u = viewport_u / m_settings.m_image_width;
     m_settings.m_pixel_delta_v = viewport_v / m_settings.m_image_height;
 
     // TODO: Check this math
-    vec3f viewport_origin = m_settings.m_position - (m_settings.m_focus_distance * m_w) - viewport_u / 2 - viewport_v / 2;
-    m_settings.m_pixel_00_loc = viewport_origin + 0.5f * (m_settings.m_pixel_delta_u + m_settings.m_pixel_delta_v);
+    vec3 viewport_origin = m_settings.m_position - (m_settings.m_focus_distance * m_w) - viewport_u / 2 - viewport_v / 2;
+    m_settings.m_pixel_00_loc = viewport_origin + 0.5 * (m_settings.m_pixel_delta_u + m_settings.m_pixel_delta_v);
 
-    f32 defocus_radius = m_settings.m_focus_distance * std::tan(deg_to_rad(m_settings.m_defocus_angle / 2));
-    m_defocus_disk_u   = m_u * defocus_radius;
-    m_defocus_disk_v   = m_v * defocus_radius;
+    Scalar defocus_radius = m_settings.m_focus_distance * std::tan(deg_to_rad(m_settings.m_defocus_angle / 2));
+    m_defocus_disk_u      = m_u * defocus_radius;
+    m_defocus_disk_v      = m_v * defocus_radius;
 }
 
 rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce)
 {
     if (bounce >= m_settings.m_ray_bounces)
     {
-        return zeros<f32, 3>();
+        return zeros<Scalar, 3>();
     }
 
     std::optional<Intersection> intersection = aggregate->intersect(ray, 1e-3f, inf);
     if (intersection)
     {
-        rgb_color attenuation = zeros<f32, 3>();
+        rgb_color attenuation = zeros<Scalar, 3>();
 
         assert(intersection->m_material != nullptr);
         std::optional<Ray> scattered = intersection->m_material->scatter(ray, intersection.value(), attenuation);
@@ -76,14 +76,14 @@ rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 boun
         }
         else
         {
-            return zeros<f32, 3>();
+            return zeros<Scalar, 3>();
         }
     }
 
-    vec3f udir  = normalized(ray.m_direction);
-    f32   blend = 0.5f * (udir[1] + 1.0);
+    vec3   udir  = normalized(ray.m_direction);
+    Scalar blend = 0.5 * (udir[1] + 1.0);
 
-    rgb_color result = (1.0f - blend) * rgb_color(1.0f, 1.0f, 1.0f) + blend * rgb_color(0.5f, 0.7f, 1.0f);
+    rgb_color result = (1.0 - blend) * rgb_color(1.0, 1.0, 1.0) + blend * rgb_color(0.5, 0.7, 1.0);
     return result;
 }
 
@@ -112,25 +112,25 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
     }
 }
 
-vec3f Camera::sample_square() const
+vec3 Camera::sample_square() const
 {
-    return vec3f(random(-0.5f, 0.5f), random(-0.5f, 0.5f), 0.0f);
+    return vec3(random(-0.5, 0.5), random(-0.5, 0.5), 0.0);
 }
 
 Ray Camera::jittered_ray(u32 u, u32 v)
 {
-    vec3f jitter_offset = sample_square();
+    vec3 jitter_offset = sample_square();
 
-    vec3f sample_loc = m_settings.m_pixel_00_loc + ((u + jitter_offset[0]) * m_settings.m_pixel_delta_u) +
-                       ((v + jitter_offset[1]) * m_settings.m_pixel_delta_v);
-    vec3f ray_direction = normalized(sample_loc - m_settings.m_position);
-    vec3f ray_origin    = m_settings.m_defocus_angle <= 0.0f ? m_settings.m_position : sample_defocus_disk();
+    vec3 sample_loc = m_settings.m_pixel_00_loc + ((u + jitter_offset[0]) * m_settings.m_pixel_delta_u) +
+                      ((v + jitter_offset[1]) * m_settings.m_pixel_delta_v);
+    vec3 ray_direction = normalized(sample_loc - m_settings.m_position);
+    vec3 ray_origin    = m_settings.m_defocus_angle <= 0.0 ? m_settings.m_position : sample_defocus_disk();
     return Ray(ray_origin, ray_direction);
 }
 
-vec3f Camera::sample_defocus_disk() const
+vec3 Camera::sample_defocus_disk() const
 {
-    vec3f p = sample_unit_disk();
+    vec3 p = sample_unit_disk();
     return m_settings.m_position + (p[0] * m_defocus_disk_u) + (p[1] * m_defocus_disk_v);
 }
 

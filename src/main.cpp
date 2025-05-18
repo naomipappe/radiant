@@ -22,15 +22,16 @@ int main()
     fmt::println("{}", "Starting Radiant");
 
     CameraSettings settings{};
-    settings.m_samples_per_pixel = 100;
+    settings.m_image_width       = 400;
+    settings.m_samples_per_pixel = 16;
     settings.m_ray_bounces       = 50;
     settings.m_vfow_deg          = 20;
 
-    settings.m_look_from      = vec3f(-2.0f, 2.0f, 1.0f);
-    settings.m_look_at        = vec3f(0.0f, 0.0f, -1.0f);
-    settings.m_world_up       = vec3f(0.0f, 1.0f, 0.0f);
-    settings.m_defocus_angle  = 1.0f;
-    settings.m_focus_distance = 3.4f;
+    settings.m_look_from      = vec3(-2.0f, 2.0f, 1.0f);
+    settings.m_look_at        = vec3(0.0f, 0.0f, -1.0f);
+    settings.m_world_up       = vec3(0.0f, 1.0f, 0.0f);
+    settings.m_defocus_angle  = 10.0;
+    settings.m_focus_distance = 3.4;
 
     Camera camera(settings);
 
@@ -40,10 +41,10 @@ int main()
     Dielectric material_left  = Dielectric(1.0 / 1.33);
     Metal      material_right = Metal(rgb_color(0.8f, 0.6f, 0.2f), 1.0f);
 
-    Sphere ground(vec3f(0.0f, -100.5f, -1.0f), 100.0f, &material_ground);
-    Sphere left(vec3f(-1.1f, 0.0f, -1.0f), 0.5f, &material_left);
-    Sphere center(vec3f(0.0f, 0.0f, -1.2f), 0.5f, &material_center);
-    Sphere right(vec3f(1.1f, 0.0f, -1.0f), 0.5f, &material_right);
+    Sphere ground(vec3(0.0f, -100.5f, -1.0f), 100.0f, &material_ground);
+    Sphere left(vec3(-1.1f, 0.0f, -1.0f), 0.5f, &material_left);
+    Sphere center(vec3(0.0f, 0.0f, -1.2f), 0.5f, &material_center);
+    Sphere right(vec3(1.1f, 0.0f, -1.0f), 0.5f, &material_right);
 
     LinearAggregate aggregate;
     aggregate.insert(&left);

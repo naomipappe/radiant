@@ -48,22 +48,22 @@ vec<T, N> random(T min, T max)
 }
 
 // Sample a random unit vector on the hemisphere, normalizing
-inline vec3f sample_sphere_hemisphere_rejection(const vec3f& normal)
+inline vec3 sample_sphere_hemisphere_rejection(const vec3& normal)
 {
     // First, generate a vector that falls into a [-1,-1]X[-1,1]x[-1,1] cube
     // then, reject if its length is > 1
-    vec3f random_unit_vector;
+    vec3 random_unit_vector;
     while (true)
     {
-        vec3f p              = random<f32, 3>(-1.0f, 1.0f);
-        f32   length_squared = p.length_squared();
-        if (std::numeric_limits<f32>::epsilon() <= length_squared && length_squared <= 1.0f)
+        vec3   p              = random<Scalar, 3>(-1.0, 1.0);
+        Scalar length_squared = p.length_squared();
+        if (std::numeric_limits<Scalar>::epsilon() <= length_squared && length_squared <= 1.0)
         {
             random_unit_vector = normalized(p);
             break;
         }
     }
-    if (dot(random_unit_vector, normal) > 0.0f)
+    if (dot(random_unit_vector, normal) > std::numeric_limits<Scalar>::epsilon())
     {
         return random_unit_vector;
     }
@@ -73,13 +73,13 @@ inline vec3f sample_sphere_hemisphere_rejection(const vec3f& normal)
     }
 }
 
-inline vec3f sample_unit_disk()
+inline vec3 sample_unit_disk()
 {
-    vec3f candidate;
+    vec3 candidate;
     do
     {
-        candidate = vec3f(random(-1.0f, 1.0f), random(-1.0f, 1.0f), 0.0f);
-    } while (candidate.length_squared() >= 1.0f);
+        candidate = vec3(random(-1.0, 1.0), random(-1.0, 1.0), 0.0);
+    } while (candidate.length_squared() >= 1.0);
     return candidate;
 }
 
