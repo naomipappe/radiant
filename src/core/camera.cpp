@@ -31,26 +31,29 @@ void Camera::init(const CameraSettings& settings)
     m_settings.m_image_height   = std::max(1u, u32(m_settings.m_image_width / m_settings.m_aspect_ratio));
     m_settings.m_sampling_scale = 1.0f / m_settings.m_samples_per_pixel;
 
-    m_settings.m_position     = m_settings.m_look_from;
-    m_settings.m_focal_length = (m_settings.m_look_from - m_settings.m_look_at).length();
+    m_settings.m_position = m_settings.m_look_from;
 
-    f32 viewport_height{ 2.0f * settings.m_focal_length * std::tan(deg_to_rad(settings.m_vfow_deg) / 2) };
+    f32 viewport_height = 2.0f * settings.m_focus_distance * std::tan(deg_to_rad(settings.m_vfow_deg) / 2);
     // TODO: Figure out why is it done like this
     f32 viewport_width = viewport_height * static_cast<f32>(m_settings.m_image_width) / m_settings.m_image_height;
 
-    w = normalized(m_settings.m_look_from - m_settings.m_look_at);
-    u = normalized(cross(m_settings.m_world_up, w));
-    v = cross(w, u);
+    m_w = normalized(m_settings.m_look_from - m_settings.m_look_at);
+    m_u = normalized(cross(m_settings.m_world_up, m_w));
+    m_v = cross(m_w, m_u);
     // Calculate viewport spanning vector and viewport pixel deltas
-    vec3f viewport_u = viewport_width * u;
-    vec3f viewport_v = -v * viewport_height;
+    vec3f viewport_u = viewport_width * m_u;
+    vec3f viewport_v = -m_v * viewport_height;
 
     m_settings.m_pixel_delta_u = viewport_u / m_settings.m_image_width;
     m_settings.m_pixel_delta_v = viewport_v / m_settings.m_image_height;
 
     // TODO: Check this math
-    vec3f viewport_origin     = m_settings.m_position - (m_settings.m_focal_length * w) - viewport_u / 2 - viewport_v / 2;
+    vec3f viewport_origin = m_settings.m_position - (m_settings.m_focus_distance * m_w) - viewport_u / 2 - viewport_v / 2;
     m_settings.m_pixel_00_loc = viewport_origin + 0.5f * (m_settings.m_pixel_delta_u + m_settings.m_pixel_delta_v);
+
+    f32 defocus_radius = m_settings.m_focus_distance * std::tan(deg_to_rad(m_settings.m_defocus_angle / 2));
+    m_defocus_disk_u   = m_u * defocus_radius;
+    m_defocus_disk_v   = m_v * defocus_radius;
 }
 
 rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce)
@@ -121,7 +124,14 @@ Ray Camera::jittered_ray(u32 u, u32 v)
     vec3f sample_loc = m_settings.m_pixel_00_loc + ((u + jitter_offset[0]) * m_settings.m_pixel_delta_u) +
                        ((v + jitter_offset[1]) * m_settings.m_pixel_delta_v);
     vec3f ray_direction = normalized(sample_loc - m_settings.m_position);
-    return Ray(m_settings.m_position, ray_direction);
+    vec3f ray_origin    = m_settings.m_defocus_angle <= 0.0f ? m_settings.m_position : sample_defocus_disk();
+    return Ray(ray_origin, ray_direction);
+}
+
+vec3f Camera::sample_defocus_disk() const
+{
+    vec3f p = sample_unit_disk();
+    return m_settings.m_position + (p[0] * m_defocus_disk_u) + (p[1] * m_defocus_disk_v);
 }
 
 } // namespace radiant

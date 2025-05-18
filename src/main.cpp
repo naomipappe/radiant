@@ -22,13 +22,15 @@ int main()
     fmt::println("{}", "Starting Radiant");
 
     CameraSettings settings{};
-    settings.m_samples_per_pixel = 4;
+    settings.m_samples_per_pixel = 100;
     settings.m_ray_bounces       = 50;
     settings.m_vfow_deg          = 20;
 
-    settings.m_look_from = vec3f(-2.0f, 2.0f, 1.0f);
-    settings.m_look_at   = vec3f(0.0f, 0.0f, -1.0f);
-    settings.m_world_up  = vec3f(0.0f, 1.0f, 0.0f);
+    settings.m_look_from      = vec3f(-2.0f, 2.0f, 1.0f);
+    settings.m_look_at        = vec3f(0.0f, 0.0f, -1.0f);
+    settings.m_world_up       = vec3f(0.0f, 1.0f, 0.0f);
+    settings.m_defocus_angle  = 1.0f;
+    settings.m_focus_distance = 3.4f;
 
     Camera camera(settings);
 
