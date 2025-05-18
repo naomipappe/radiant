@@ -34,14 +34,14 @@ class Lambertian : public Material
 class Metal : public Material
 {
   public:
-    Metal(const rgb_color& albedo, f32 roughness);
+    Metal(const rgb_color& albedo, Scalar roughness);
 
     std::optional<Ray> scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const override;
     virtual ~Metal() {};
 
   private:
     rgb_color m_albedo; // Notice that both materials have albedo
-    f32       m_roughness;
+    Scalar       m_roughness;
 };
 
 class Dielectric : public Material
@@ -53,7 +53,7 @@ class Dielectric : public Material
     virtual ~Dielectric() {};
 
   private:
-    f32 reflectance(f32 cosine, f32 refraction_index) const;
+    Scalar reflectance(Scalar cosine, Scalar refraction_index) const;
 
   private:
     Scalar m_effective_refraction_index;

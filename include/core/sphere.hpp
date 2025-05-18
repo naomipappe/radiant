@@ -7,15 +7,15 @@ namespace radiant
 class Sphere : public Primitive
 {
   public:
-    Sphere(const vec3f& center, f32 radius);
-    Sphere(const vec3f& center, f32 radius, Material* material);
+    Sphere(const vec3& center, Scalar radius);
+    Sphere(const vec3& center, Scalar radius, Material* material);
 
-    bool                        test_intersection(const Ray& r, f32 tmin, f32 tmax) const override;
-    std::optional<Intersection> intersect(const Ray& r, f32 tmin, f32 tmax) const override;
+    bool                        test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const override;
+    std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override;
 
   private:
-    vec3f     m_center{ 0.0f };
-    f32       m_radius{ 1.0f };
+    vec3      m_center{ 0.0 };
+    Scalar    m_radius{ 1.0 };
     Material* m_material{ nullptr };
 };
 } // namespace radiant

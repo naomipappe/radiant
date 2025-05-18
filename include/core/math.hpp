@@ -6,13 +6,13 @@
 
 namespace radiant
 {
-const f32 inf  = std::numeric_limits<f32>::infinity();
-const f32 PI   = 3.1415926535897932385;
-const f32 PI_2 = PI / 2;
-const f32 PI_3 = PI / 3;
-const f32 PI_4 = PI / 4;
-const f32 PI_6 = PI / 6;
+const Scalar inf  = std::numeric_limits<Scalar>::infinity();
+const Scalar PI   = 3.1415926535897932385;
+const Scalar PI_2 = PI / 2;
+const Scalar PI_3 = PI / 3;
+const Scalar PI_4 = PI / 4;
+const Scalar PI_6 = PI / 6;
 
-f32 deg_to_rad(f32 degrees);
-f32 rad_to_get(f32 radians);
+Scalar deg_to_rad(Scalar degrees);
+Scalar rad_to_get(Scalar radians);
 } // namespace radiant

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cinttypes>
+#include <cstdint>
 
 namespace radiant
 {
@@ -17,5 +17,5 @@ using i64 = int64_t;
 using f32 = float;
 using f64 = double;
 
-using Scalar = f32;
+using Scalar = f64;
 } // namespace radiant

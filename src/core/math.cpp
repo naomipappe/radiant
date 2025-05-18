@@ -2,11 +2,11 @@
 
 namespace radiant
 {
-f32 deg_to_rad(f32 degrees)
+Scalar deg_to_rad(Scalar degrees)
 {
     return degrees * PI / 180.0f;
 }
-f32 rad_to_get(f32 radians)
+Scalar rad_to_get(Scalar radians)
 {
     return radians * 180.0f / PI;
 }

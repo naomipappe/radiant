@@ -13,12 +13,12 @@ class Material;
 struct Intersection
 {
     Intersection() = default;
-    Intersection(const vec3f& intersection, const vec3f& normal, f32 t, Material* material) :
+    Intersection(const vec3& intersection, const vec3& normal, Scalar t, Material* material) :
         m_intersection(intersection), m_normal(normal), m_t(t), m_material(material)
     {}
-    vec3f     m_intersection;
-    vec3f     m_normal;
-    f32       m_t;
+    vec3     m_intersection;
+    vec3     m_normal;
+    Scalar       m_t;
     Material* m_material;
 };
 
@@ -28,7 +28,7 @@ class Primitive
 {
   public:
     virtual ~Primitive()                                                                          = default;
-    virtual bool                        test_intersection(const Ray& r, f32 tmin, f32 tmax) const = 0;
-    virtual std::optional<Intersection> intersect(const Ray& r, f32 tmin, f32 tmax) const         = 0;
+    virtual bool                        test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const = 0;
+    virtual std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const         = 0;
 };
 } // namespace radiant

@@ -13,8 +13,8 @@ class LinearAggregate : public Aggregate
     explicit LinearAggregate(const std::span<Primitive*>& primitives);
     ~LinearAggregate() = default;
 
-    virtual bool                        test_intersection(const Ray& r, f32 tmin, f32 tmax) const override;
-    virtual std::optional<Intersection> intersect(const Ray& r, f32 tmin, f32 tmax) const override;
+    virtual bool                        test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const override;
+    virtual std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override;
     virtual void                        insert(Primitive* primitive) override;
     virtual void                        clear() override;
 

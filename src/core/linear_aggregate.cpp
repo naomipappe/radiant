@@ -6,14 +6,14 @@ LinearAggregate::LinearAggregate(const std::span<Primitive*>& primitives) :
     m_primitives(primitives.begin(), primitives.end())
 {}
 
-bool LinearAggregate::test_intersection(const Ray& r, f32 tmin, f32 tmax) const
+bool LinearAggregate::test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const
 {
     return intersect(r, tmin, tmax) != std::nullopt;
 }
-std::optional<Intersection> LinearAggregate::intersect(const Ray& r, f32 tmin, f32 tmax) const
+std::optional<Intersection> LinearAggregate::intersect(const Ray& r, Scalar tmin, Scalar tmax) const
 {
     std::optional<Intersection> intersection = std::nullopt;
-    f32                         closest      = tmax;
+    Scalar                         closest      = tmax;
 
     std::optional<Intersection> iterator;
     for (const Primitive* primitive : m_primitives)

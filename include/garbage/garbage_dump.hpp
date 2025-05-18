@@ -9,7 +9,7 @@
 namespace radiant::garbage
 {
 
-f32 linear_to_gamma(f32 linear_component);
+Scalar linear_to_gamma(Scalar linear_component);
 
 // Writes the data into ppm image
 // Assumes that bytes is of length width * height * 3
