@@ -73,4 +73,14 @@ inline vec3f sample_sphere_hemisphere_rejection(const vec3f& normal)
     }
 }
 
+inline vec3f sample_unit_disk()
+{
+    vec3f candidate;
+    do
+    {
+        candidate = vec3f(random(-1.0f, 1.0f), random(-1.0f, 1.0f), 0.0f);
+    } while (candidate.length_squared() >= 1.0f);
+    return candidate;
+}
+
 } // namespace radiant
