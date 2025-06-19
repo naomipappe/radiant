@@ -3,11 +3,10 @@
 #include "core/primitive.hpp"
 #include "core/types.hpp"
 
-
 namespace radiant
 {
 
-struct StaticTriangleMesh : public Primitive
+struct StaticTriangleMesh
 {
     StaticTriangleMesh() = default;
     u32         m_num_triangles{ 0 }, m_num_vertices{ 0 };
