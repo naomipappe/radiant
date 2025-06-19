@@ -14,7 +14,7 @@ class Material
   public:
     virtual ~Material() {};
 
-    virtual std::optional<Ray> scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const
+    virtual std::optional<Ray> scatter(const Ray& ray, SurfaceIntersection& intersection, rgb_color& attenuation) const
     {
         return std::nullopt;
     }
@@ -24,7 +24,7 @@ class Lambertian : public Material
 {
   public:
     explicit Lambertian(const rgb_color& albedo);
-    std::optional<Ray> scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const override;
+    std::optional<Ray> scatter(const Ray& ray, SurfaceIntersection& intersection, rgb_color& attenuation) const override;
     virtual ~Lambertian() {};
 
   private:
@@ -36,7 +36,7 @@ class Metal : public Material
   public:
     Metal(const rgb_color& albedo, Scalar roughness);
 
-    std::optional<Ray> scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const override;
+    std::optional<Ray> scatter(const Ray& ray, SurfaceIntersection& intersection, rgb_color& attenuation) const override;
     virtual ~Metal() {};
 
   private:
@@ -49,7 +49,7 @@ class Dielectric : public Material
   public:
     explicit Dielectric(Scalar effective_refraction_index);
 
-    std::optional<Ray> scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const override;
+    std::optional<Ray> scatter(const Ray& ray, SurfaceIntersection& intersection, rgb_color& attenuation) const override;
     virtual ~Dielectric() {};
 
   private:
