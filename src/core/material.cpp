@@ -13,7 +13,7 @@ namespace radiant
 
 Lambertian::Lambertian(const rgb_color& albedo) : m_albedo(albedo) {}
 
-std::optional<Ray> Lambertian::scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const
+std::optional<Ray> Lambertian::scatter(const Ray& ray, SurfaceIntersection& intersection, rgb_color& attenuation) const
 {
     vec3 scattering_direction = intersection.m_normal + random<Scalar, 3>().normalize();
     if (scattering_direction.is_zero())
@@ -26,7 +26,7 @@ std::optional<Ray> Lambertian::scatter(const Ray& ray, Intersection& intersectio
 
 Metal::Metal(const rgb_color& albedo, Scalar roughness) : m_albedo(albedo), m_roughness(std::clamp(roughness, 0.0, 1.0)) {}
 
-std::optional<Ray> Metal::scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const
+std::optional<Ray> Metal::scatter(const Ray& ray, SurfaceIntersection& intersection, rgb_color& attenuation) const
 {
     vec3 reflected = reflect(ray.m_direction, intersection.m_normal).normalize();
     reflected += random<Scalar, 3>() * m_roughness;
@@ -36,7 +36,7 @@ std::optional<Ray> Metal::scatter(const Ray& ray, Intersection& intersection, rg
 
 Dielectric::Dielectric(Scalar effective_refraction_index) : m_effective_refraction_index(effective_refraction_index) {}
 
-std::optional<Ray> Dielectric::scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const
+std::optional<Ray> Dielectric::scatter(const Ray& ray, SurfaceIntersection& intersection, rgb_color& attenuation) const
 {
     attenuation = ones<Scalar, 3>();
     Scalar ri   = m_effective_refraction_index;

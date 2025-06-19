@@ -14,7 +14,7 @@ class LinearAggregate : public Aggregate
     ~LinearAggregate() = default;
 
     virtual bool                        test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const override;
-    virtual std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override;
+    virtual std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override;
     virtual void                        insert(Primitive* primitive) override;
     virtual void                        clear() override;
 

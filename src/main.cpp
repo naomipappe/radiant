@@ -1,7 +1,7 @@
 #include "core/camera.hpp"
 #include "core/color.hpp"
 #include "core/material.hpp"
-#include "core/math.hpp"
+#include "core/primitive.hpp"
 #include "core/render_target.hpp"
 #include "fmt/base.h"
 #include <garbage/garbage_dump.hpp>
@@ -9,10 +9,11 @@
 #include <core/constants.hpp>
 #include <core/ray.hpp>
 #include <core/vec.hpp>
-#include <core/sphere.hpp>
 #include <core/acceleration_structures/linear_aggregate.hpp>
+#include <core/shapes/sphere.hpp>
 
 #include <filesystem>
+#include <memory>
 #include <vector> // TODO: Remove STL when bored
 
 using namespace radiant;
@@ -30,27 +31,32 @@ int main()
     settings.m_look_from      = vec3(-2.0f, 2.0f, 1.0f);
     settings.m_look_at        = vec3(0.0f, 0.0f, -1.0f);
     settings.m_world_up       = vec3(0.0f, 1.0f, 0.0f);
-    settings.m_defocus_angle  = 10.0;
+    settings.m_defocus_angle  = 0.1;
     settings.m_focus_distance = 3.4;
 
     Camera camera(settings);
 
     // Populate the scene
-    Lambertian material_ground(rgb_color(0.8f, 0.8f, 0.0f));
-    Lambertian material_center(rgb_color(0.1f, 0.2f, 0.5f));
-    Dielectric material_left  = Dielectric(1.0 / 1.33);
-    Metal      material_right = Metal(rgb_color(0.8f, 0.6f, 0.2f), 1.0f);
+    std::shared_ptr<Lambertian> material_ground = std::make_shared<Lambertian>(rgb_color(0.8f, 0.8f, 0.0f));
+    std::shared_ptr<Lambertian> material_center = std::make_shared<Lambertian>(rgb_color(0.1f, 0.2f, 0.5f));
+    std::shared_ptr<Dielectric> material_left   = std::make_shared<Dielectric>(1.0 / 1.33);
+    std::shared_ptr<Metal>      material_right  = std::make_shared<Metal>(rgb_color(0.8f, 0.6f, 0.2f), 1.0f);
 
-    Sphere ground(vec3(0.0f, -100.5f, -1.0f), 100.0f, &material_ground);
-    Sphere left(vec3(-1.1f, 0.0f, -1.0f), 0.5f, &material_left);
-    Sphere center(vec3(0.0f, 0.0f, -1.2f), 0.5f, &material_center);
-    Sphere right(vec3(1.1f, 0.0f, -1.0f), 0.5f, &material_right);
+    std::shared_ptr<radiant::Sphere> ground_sphere = std::make_shared<radiant::Sphere>(vec3(0.0, -100.5, -1.0), 100.0);
+    std::shared_ptr<radiant::Sphere> left_sphere   = std::make_shared<radiant::Sphere>(vec3(-1.1f, 0.0f, -1.0f), 0.5f);
+    std::shared_ptr<radiant::Sphere> right_sphere  = std::make_shared<radiant::Sphere>(vec3(0.0f, 0.0f, -1.2f), 0.5f);
+    std::shared_ptr<radiant::Sphere> center_sphere = std::make_shared<radiant::Sphere>(vec3(1.1f, 0.0f, -1.0f), 0.5f);
+
+    std::shared_ptr<GeometricPrimitive> ground = std::make_shared<GeometricPrimitive>(ground_sphere, material_ground);
+    std::shared_ptr<GeometricPrimitive> left   = std::make_shared<GeometricPrimitive>(left_sphere, material_left);
+    std::shared_ptr<GeometricPrimitive> center = std::make_shared<GeometricPrimitive>(center_sphere, material_center);
+    std::shared_ptr<GeometricPrimitive> right  = std::make_shared<GeometricPrimitive>(right_sphere, material_right);
 
     LinearAggregate aggregate;
-    aggregate.insert(&left);
-    aggregate.insert(&center);
-    aggregate.insert(&right);
-    aggregate.insert(&ground);
+    aggregate.insert(left.get());
+    aggregate.insert(center.get());
+    aggregate.insert(right.get());
+    aggregate.insert(ground.get());
 
     // Render the scene to the image buffer
     RenderTarget target{};
