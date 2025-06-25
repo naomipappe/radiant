@@ -25,12 +25,12 @@ int main()
     fmt::println("{}", "Starting Radiant");
 
     CameraSettings settings{};
-    settings.m_image_width       = 400;
+    settings.m_image_width       = 800;
     settings.m_samples_per_pixel = 4;
-    settings.m_ray_bounces       = 2;
+    settings.m_ray_bounces       = 10;
     settings.m_vfow_deg          = 20;
 
-    settings.m_look_from      = vec3(0.0f, 0.0f, 10.0f);
+    settings.m_look_from      = vec3(0.0f, 1.0f, 10.0f);
     settings.m_look_at        = vec3(0.0f, 0.0f, -1.0f);
     settings.m_world_up       = vec3(0.0f, 1.0f, 0.0f);
     settings.m_defocus_angle  = 0.1;
@@ -44,7 +44,7 @@ int main()
         vec3{ 1.0, 0.0, -1.0 },  // vertex 2: back-right
     };
 
-    std::vector<u32>  indices      = { 1, 0, 2 };
+    std::vector<u32>  indices      = { 0, 1, 2 };
     std::vector<vec3> per_vertex_n = {
         vec3{ 0.0, 0.0, 1.0 }, // vertex 0: front
         vec3{ 0.0, 0.0, 1.0 }, // vertex 1: back-left
@@ -65,7 +65,7 @@ int main()
     std::vector<std::shared_ptr<Triangle>> triangles;
     triangles.emplace_back(std::make_shared<Triangle>(0, 0));
 
-    std::shared_ptr<Lambertian>         red_triangle_material = std::make_shared<Lambertian>(rgb_color(1.0, 0.0, 0.0));
+    std::shared_ptr<Lambertian>         red_triangle_material = std::make_shared<Lambertian>(rgb_color(0.0, 66.0 / 256.0, 37.0 / 256.0));
     std::shared_ptr<GeometricPrimitive> face = std::make_shared<GeometricPrimitive>(triangles[0], red_triangle_material);
 
     // Populate the scene

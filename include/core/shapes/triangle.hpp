@@ -8,6 +8,7 @@
 #include "core/types.hpp"
 #include "core/vec.hpp"
 
+#include <cassert>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -29,6 +30,7 @@ struct Triangle : public Shape
 
     std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override
     {
+        assert(tmin > 0);
         const std::vector<std::shared_ptr<StaticTriangleMesh>>& meshes = *g_meshes;
         const u32*  indices = &meshes[m_mesh_index]->m_indices[3 * m_triangle_index];
         const vec3& p1      = meshes[m_mesh_index]->m_positions[indices[0]];
@@ -64,8 +66,12 @@ struct Triangle : public Shape
         const vec3& n2 = meshes[m_mesh_index]->m_normals[indices[1]];
         const vec3& n3 = meshes[m_mesh_index]->m_normals[indices[2]];
 
-        return std::make_optional<SurfaceIntersection>(
-            r.m_origin + t * r.m_direction, ((1 - u - v) * n1 + u * n2 + v * n3).normalize(), t);
+        vec3 n_hit = ((1 - u - v) * n1 + u * n2 + v * n3).normalize();
+        if (r.m_direction.dot(n_hit) > 0)
+        {
+            n_hit = -n_hit;
+        }
+        return std::make_optional<SurfaceIntersection>(r.m_origin + t * r.m_direction, n_hit, t);
     }
 };
 } // namespace radiant
