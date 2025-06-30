@@ -12,10 +12,12 @@ src/core/sphere.cpp
 src/core/linear_aggregate.cpp
 src/core/camera.cpp
 src/core/material.cpp
-src/core/math.cpp)
+src/core/math.cpp
+src/importers/obj.cpp
+src/core/shapes/triangle.cpp)
 
 add_executable(radiant ${RADIANT_SOURCES})
 add_subdirectory(external)
 
 target_include_directories(radiant PRIVATE include)
-target_link_libraries(radiant PRIVATE stb fmt::fmt)
+target_link_libraries(radiant PRIVATE stb fmt::fmt rapidobj::rapidobj)
