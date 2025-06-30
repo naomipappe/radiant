@@ -6,4 +6,4 @@ dbuild/
 .cache/
 
 .ppm
-.png
+*.png

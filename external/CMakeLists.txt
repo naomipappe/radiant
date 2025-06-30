@@ -1,3 +1,5 @@
 add_subdirectory(stb)
 
 add_subdirectory(fmt)
+
+add_subdirectory(rapidobj)

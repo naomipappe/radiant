@@ -6,6 +6,7 @@
 #include "core/types.hpp"
 #include "core/vec.hpp"
 #include "core/material.hpp"
+#include "fmt/base.h"
 #include <cassert>
 #include <cmath>
 #include <core/camera.hpp>
@@ -108,6 +109,10 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
                 sampled_color += ray_color(jittered_ray(u, v), aggregate, 0);
             }
             render_target.render_target[u + v * m_settings.m_image_width] = sampled_color * m_settings.m_sampling_scale;
+        }
+        if (v % 100 == 0)
+        {
+            fmt::println("Completed {}/{}", v, m_settings.m_image_height);
         }
     }
 }
