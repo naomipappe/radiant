@@ -129,7 +129,7 @@ Ray Camera::jittered_ray(u32 u, u32 v)
     vec3 sample_loc = m_settings.m_pixel_00_loc + ((u + jitter_offset[0]) * m_settings.m_pixel_delta_u) +
                       ((v + jitter_offset[1]) * m_settings.m_pixel_delta_v);
     vec3 ray_direction = normalized(sample_loc - m_settings.m_position);
-    vec3 ray_origin    = m_settings.m_defocus_angle <= 0.0 ? m_settings.m_position : sample_defocus_disk();
+    vec3 ray_origin    = vec3(m_settings.m_defocus_angle <= 0.0 ? m_settings.m_position.m_data : sample_defocus_disk().m_data);
     return Ray(ray_origin, ray_direction);
 }
 

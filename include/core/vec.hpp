@@ -41,6 +41,7 @@ struct vec
 
     vec() : m_data{} {}
     explicit vec(const T* data) { std::copy(data, data + N, m_data); }
+    explicit vec(T* data) { std::copy(data, data + N, m_data); }
     explicit vec(const T value) { std::fill(m_data, m_data + N, value); }
 
     template <typename... Args>

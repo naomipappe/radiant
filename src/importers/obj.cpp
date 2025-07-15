@@ -6,6 +6,9 @@
 #include "core/shapes/triangle.hpp"
 #include "core/triangle_mesh.hpp"
 #include "core/types.hpp"
+#include "fmt/base.h"
+#include "fmt/printf.h"
+
 #include <cstdlib>
 #include <memory>
 #include <span>
@@ -18,6 +21,7 @@ std::pair<std::shared_ptr<StaticTriangleMesh>, std::vector<std::shared_ptr<Trian
 
     if (result.error)
     {
+        fmt::fprintf(stderr, "{}", result.error.line);
         std::abort();
     }
 

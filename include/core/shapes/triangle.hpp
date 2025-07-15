@@ -41,7 +41,7 @@ struct Triangle : public Shape
         vec3 e2 = p3 - p1;
 
         Scalar denom = det(-r.m_direction, e1, e2);
-        if (abs(denom) < eps)
+        if (std::abs(denom) < eps)
         {
             return std::nullopt; // Ray parallel to triangle
         }
