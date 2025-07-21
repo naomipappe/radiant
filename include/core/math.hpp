@@ -1,7 +1,6 @@
 #pragma once
 
 #include <limits>
-#include <cmath>
 #include "core/types.hpp"
 #include "core/vec.hpp"
 
@@ -20,4 +19,6 @@ Scalar rad_to_get(Scalar radians);
 
 Scalar det(const vec3& v1, const vec3& v2, const vec3& v3);
 
+vec3 pointwise_min(const vec3& a, const vec3& b);
+vec3 pointwise_max(const vec3& a, const vec3& b);
 } // namespace radiant
