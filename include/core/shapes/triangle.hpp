@@ -9,15 +9,33 @@
 #include "core/vec.hpp"
 
 #include <cassert>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <vector>
 
 namespace radiant
 {
-struct Triangle : public Shape
+struct Triangle final : public Shape
 {
-    Triangle(u32 mesh_idx, u32 triangle_idx) : m_mesh_index(mesh_idx), m_triangle_index(triangle_idx) {}
+    Triangle(u32 mesh_idx, u32 triangle_idx) : m_mesh_index(mesh_idx), m_triangle_index(triangle_idx)
+    {
+        const u32*  indices = &(*g_meshes)[m_mesh_index]->m_indices[3 * m_triangle_index];
+        const vec3& p1      = (*g_meshes)[m_mesh_index]->m_positions[indices[0]];
+        const vec3& p2      = (*g_meshes)[m_mesh_index]->m_positions[indices[1]];
+        const vec3& p3      = (*g_meshes)[m_mesh_index]->m_positions[indices[2]];
+        m_centroid          = 0.3333 * (p1 + p2 + p3);
+
+        aabb_min = pointwise_min(aabb_min, p1);
+        aabb_min = pointwise_min(aabb_min, p2);
+        aabb_min = pointwise_min(aabb_min, p3);
+
+        aabb_max = pointwise_max(aabb_max, p1);
+        aabb_max = pointwise_max(aabb_max, p2);
+        aabb_max = pointwise_max(aabb_max, p3);
+    }
+    ~Triangle() override = default;
+
     static std::vector<std::shared_ptr<StaticTriangleMesh>>* g_meshes;
 
     u32 m_mesh_index{ 0 };

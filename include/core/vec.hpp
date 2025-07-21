@@ -49,6 +49,7 @@ struct vec
     {
         static_assert(sizeof...(Args) == N, "Number of arguments must match vector size");
     }
+    
     const T& operator[](u32 i) const { return m_data[i]; };
     T&       operator[](u32 i) { return m_data[i]; };
 

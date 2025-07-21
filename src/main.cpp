@@ -76,15 +76,11 @@ int main(int argc, char* argv[])
         triangle_prims.push_back(std::make_shared<GeometricPrimitive>(triangle, triangle_mat));
     }
     std::shared_ptr<GeometricPrimitive> ground = std::make_shared<GeometricPrimitive>(ground_sphere, material_ground);
-    // std::shared_ptr<GeometricPrimitive> left   = std::make_shared<GeometricPrimitive>(left_sphere, material_left);
     std::shared_ptr<GeometricPrimitive> center = std::make_shared<GeometricPrimitive>(center_sphere, material_right);
-    // std::shared_ptr<GeometricPrimitive> right  = std::make_shared<GeometricPrimitive>(right_sphere, material_right);
 
     LinearAggregate aggregate;
     // Populate the scene
-    // aggregate.insert(left.get());
     aggregate.insert(center.get());
-    // aggregate.insert(right.get());
     aggregate.insert(ground.get());
     for (const auto& triangle_prim : triangle_prims)
     {
