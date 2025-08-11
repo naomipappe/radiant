@@ -1,3 +1,4 @@
+#include "core/acceleration_structures/bvh_aggregate.hpp"
 #include "core/camera.hpp"
 #include "core/color.hpp"
 #include "core/material.hpp"
@@ -78,7 +79,7 @@ int main(int argc, char* argv[])
     std::shared_ptr<GeometricPrimitive> ground = std::make_shared<GeometricPrimitive>(ground_sphere, material_ground);
     std::shared_ptr<GeometricPrimitive> center = std::make_shared<GeometricPrimitive>(center_sphere, material_right);
 
-    LinearAggregate aggregate;
+    BVHAggregate aggregate;
     // Populate the scene
     aggregate.insert(center.get());
     aggregate.insert(ground.get());
@@ -86,6 +87,8 @@ int main(int argc, char* argv[])
     {
         aggregate.insert(triangle_prim.get());
     }
+
+    aggregate.build();
 
     // Render the scene to the image buffer
     RenderTarget target{};

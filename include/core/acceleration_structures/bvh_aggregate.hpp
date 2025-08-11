@@ -2,7 +2,10 @@
 
 #include <limits>
 #include <memory>
+#include <numeric>
+#include <optional>
 #include <span>
+#include <sys/types.h>
 #include <vector>
 
 #include <core/types.hpp>
@@ -16,15 +19,14 @@ namespace radiant
 struct BVHNode
 {
     vec3 aabb_min, aabb_max;
-    u32  left_child{ 0 }, right_child{ 0 };
-    bool leaf{ false };
-    u32  first_primitive{ 0 }, primitive_count{ 0 };
+    u32  left_child          = 0;
+    u32  first_primitive_idx = 0;
+    u32  primitive_count     = 0;
 };
 class BVHAggregate : public Aggregate
 {
   public:
-    explicit BVHAggregate(std::span<std::shared_ptr<GeometricPrimitive>> primitives) :
-        m_primitives(primitives.begin(), primitives.end())
+    explicit BVHAggregate(std::span<GeometricPrimitive*> primitives) : m_primitives(primitives.begin(), primitives.end())
     {
         build(primitives);
         m_dirty = false;
@@ -33,11 +35,19 @@ class BVHAggregate : public Aggregate
     BVHAggregate()                   = default;
     virtual ~BVHAggregate() override = default;
 
-    void insert(std::shared_ptr<GeometricPrimitive> primitive)
+    void insert(GeometricPrimitive* primitive) override
     {
         m_primitives.push_back(primitive);
         m_dirty = true;
     }
+
+    bool test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const override { return false; };
+    std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override
+    {
+        return std::nullopt;
+    }
+
+    void clear() override {};
 
     void build()
     {
@@ -47,12 +57,14 @@ class BVHAggregate : public Aggregate
     }
 
   protected:
-    void build(std::span<std::shared_ptr<GeometricPrimitive>> primitives)
+    void build(std::span<GeometricPrimitive*> primitives)
     {
         m_nodes.reserve(2 * primitives.size() - 1);
-        BVHNode& root        = m_nodes.emplace_back();
-        root.first_primitive = 0;
-        root.primitive_count = primitives.size();
+        m_primitive_indices.resize(m_primitives.size());
+        std::iota(m_primitive_indices.begin(), m_primitive_indices.end(), 0);
+        BVHNode& root            = m_nodes.emplace_back();
+        root.first_primitive_idx = 0;
+        root.primitive_count     = primitives.size();
     }
 
     void update_bounds(u32 node_idx)
@@ -60,18 +72,81 @@ class BVHAggregate : public Aggregate
         BVHNode& node = m_nodes[node_idx];
         node.aabb_min = vec3(std::numeric_limits<Scalar>::max());
         node.aabb_max = vec3(-std::numeric_limits<Scalar>::max());
-        for (u32 offset = node.first_primitive, p = 0; p < node.primitive_count; ++p)
+        for (u32 offset = node.first_primitive_idx, p = 0; p < node.primitive_count; ++p)
         {
-            const auto& primitive = m_primitives[offset + p];
+            u32         tri_idx   = m_primitive_indices[offset + p];
+            const auto& primitive = m_primitives[tri_idx];
             node.aabb_min         = pointwise_min(node.aabb_min, primitive->aabb_min());
             node.aabb_max         = pointwise_max(node.aabb_min, primitive->aabb_max());
         }
     }
 
+    void subdivide(u32 node_idx)
+    {
+        BVHNode& node = m_nodes[node_idx];
+
+        if (node.primitive_count <= 2)
+        {
+            return;
+        }
+
+        vec3 extent = node.aabb_max - node.aabb_min;
+        u32  axis   = 0;
+        if (extent[1] > extent[axis])
+        {
+            axis = 1;
+        }
+        if (extent[2] > extent[axis])
+        {
+            axis = 2;
+        }
+        Scalar split_pos = node.aabb_min[axis] + extent[axis] * 0.5f;
+
+        u32 i = node.first_primitive_idx;
+        u32 j = i + node.primitive_count - 1;
+        while (i <= j)
+        {
+            if (m_primitives[i]->m_shape->m_centroid[axis] < split_pos)
+            {
+                i--;
+            }
+            else
+            {
+                std::swap(m_primitives[i], m_primitives[j--]);
+            }
+        }
+
+        u32 left_count = i - node.primitive_count;
+        if (left_count == 0 || left_count == node.primitive_count)
+        {
+            return;
+        }
+
+        u32 left_child                = m_nodes.size();
+        node.left_child               = left_child;
+        BVHNode& left_node            = m_nodes.emplace_back(BVHNode{});
+        left_node.first_primitive_idx = node.first_primitive_idx;
+        left_node.primitive_count     = left_count;
+
+        u32      right_child           = m_nodes.size();
+        BVHNode& right_node            = m_nodes.emplace_back(BVHNode{});
+        right_node.first_primitive_idx = i;
+        right_node.primitive_count     = node.primitive_count - left_count;
+
+        node.primitive_count = 0;
+
+        update_bounds(left_child);
+        update_bounds(right_child);
+
+        subdivide(left_child);
+        subdivide(right_child);
+    }
+
   protected:
-    bool                                             m_dirty{ true };
-    std::vector<BVHNode>                             m_nodes;
-    std::vector<std::shared_ptr<GeometricPrimitive>> m_primitives;
+    bool                             m_dirty{ true };
+    std::vector<BVHNode>             m_nodes;
+    std::vector<GeometricPrimitive*> m_primitives;
+    std::vector<u32>                 m_primitive_indices;
 };
 
 }; // namespace radiant
