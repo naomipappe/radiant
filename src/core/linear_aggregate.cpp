@@ -1,3 +1,4 @@
+#include "core/primitive.hpp"
 #include <core/acceleration_structures/linear_aggregate.hpp>
 
 namespace radiant
@@ -13,7 +14,7 @@ bool LinearAggregate::test_intersection(const Ray& r, Scalar tmin, Scalar tmax) 
 std::optional<SurfaceIntersection> LinearAggregate::intersect(const Ray& r, Scalar tmin, Scalar tmax) const
 {
     std::optional<SurfaceIntersection> intersection = std::nullopt;
-    Scalar                         closest      = tmax;
+    Scalar                             closest      = tmax;
 
     std::optional<SurfaceIntersection> iterator;
     for (const Primitive* primitive : m_primitives)
@@ -28,7 +29,7 @@ std::optional<SurfaceIntersection> LinearAggregate::intersect(const Ray& r, Scal
     return intersection;
 }
 
-void LinearAggregate::insert(Primitive* primitive)
+void LinearAggregate::insert(GeometricPrimitive* primitive)
 {
     m_primitives.push_back(primitive);
 }

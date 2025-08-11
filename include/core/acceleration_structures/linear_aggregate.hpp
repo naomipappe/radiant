@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/primitive.hpp"
 #include <span>
 #include <vector>
 
@@ -16,7 +17,7 @@ class LinearAggregate : public Aggregate
 
     bool                               test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const override;
     std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override;
-    void                               insert(Primitive* primitive) override;
+    void                               insert(GeometricPrimitive* primitive) override;
     void                               clear() override;
 
   private:
