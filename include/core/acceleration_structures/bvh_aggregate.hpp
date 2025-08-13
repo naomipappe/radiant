@@ -1,7 +1,8 @@
 #pragma once
 
+#include "fmt/base.h"
+
 #include <limits>
-#include <memory>
 #include <numeric>
 #include <optional>
 #include <span>
@@ -23,6 +24,7 @@ struct BVHNode
     u32  first_primitive_idx = 0;
     u32  primitive_count     = 0;
 };
+
 class BVHAggregate : public Aggregate
 {
   public:
@@ -32,8 +34,8 @@ class BVHAggregate : public Aggregate
         m_dirty = false;
     }
 
-    BVHAggregate()                   = default;
-    virtual ~BVHAggregate() override = default;
+    BVHAggregate()           = default;
+    ~BVHAggregate() override = default;
 
     void insert(GeometricPrimitive* primitive) override
     {
@@ -41,10 +43,14 @@ class BVHAggregate : public Aggregate
         m_dirty = true;
     }
 
-    bool test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const override { return false; };
-    std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override
+    [[nodiscard]] bool test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const override
     {
-        return std::nullopt;
+        return intersect(r, tmin, tmax) != std::nullopt;
+    }
+
+    [[nodiscard]] std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override
+    {
+        return intersect(r, tmin, tmax, 0);
     }
 
     void clear() override {};
@@ -57,7 +63,7 @@ class BVHAggregate : public Aggregate
     }
 
   protected:
-    void build(std::span<GeometricPrimitive*> primitives)
+    void build(const std::span<GeometricPrimitive*> primitives)
     {
         m_nodes.reserve(2 * primitives.size() - 1);
         m_primitive_indices.resize(m_primitives.size());
@@ -65,6 +71,9 @@ class BVHAggregate : public Aggregate
         BVHNode& root            = m_nodes.emplace_back();
         root.first_primitive_idx = 0;
         root.primitive_count     = primitives.size();
+
+        update_bounds(0);
+        subdivide(0);
     }
 
     void update_bounds(u32 node_idx)
@@ -77,7 +86,7 @@ class BVHAggregate : public Aggregate
             u32         tri_idx   = m_primitive_indices[offset + p];
             const auto& primitive = m_primitives[tri_idx];
             node.aabb_min         = pointwise_min(node.aabb_min, primitive->aabb_min());
-            node.aabb_max         = pointwise_max(node.aabb_min, primitive->aabb_max());
+            node.aabb_max         = pointwise_max(node.aabb_max, primitive->aabb_max());
         }
     }
 
@@ -100,36 +109,36 @@ class BVHAggregate : public Aggregate
         {
             axis = 2;
         }
-        Scalar split_pos = node.aabb_min[axis] + extent[axis] * 0.5f;
+        const Scalar split_pos = node.aabb_min[axis] + extent[axis] * 0.5f;
 
         u32 i = node.first_primitive_idx;
         u32 j = i + node.primitive_count - 1;
         while (i <= j)
         {
-            if (m_primitives[i]->m_shape->m_centroid[axis] < split_pos)
+            if (m_primitives[m_primitive_indices[i]]->m_shape->m_centroid[axis] < split_pos)
             {
-                i--;
+                i++;
             }
             else
             {
-                std::swap(m_primitives[i], m_primitives[j--]);
+                std::swap(m_primitive_indices[i], m_primitive_indices[j--]);
             }
         }
 
-        u32 left_count = i - node.primitive_count;
+        const u32 left_count = i - node.first_primitive_idx;
         if (left_count == 0 || left_count == node.primitive_count)
         {
             return;
         }
 
-        u32 left_child                = m_nodes.size();
+        const u32 left_child          = m_nodes.size();
         node.left_child               = left_child;
         BVHNode& left_node            = m_nodes.emplace_back(BVHNode{});
         left_node.first_primitive_idx = node.first_primitive_idx;
         left_node.primitive_count     = left_count;
 
-        u32      right_child           = m_nodes.size();
-        BVHNode& right_node            = m_nodes.emplace_back(BVHNode{});
+        const u32 right_child          = m_nodes.size();
+        BVHNode&  right_node           = m_nodes.emplace_back(BVHNode{});
         right_node.first_primitive_idx = i;
         right_node.primitive_count     = node.primitive_count - left_count;
 
@@ -142,11 +151,45 @@ class BVHAggregate : public Aggregate
         subdivide(right_child);
     }
 
+    [[nodiscard]] std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax, u32 node_idx) const
+    {
+        const BVHNode& node = m_nodes[node_idx];
+        if (!test_intersection_aabb(r, node.aabb_min, node.aabb_max))
+        {
+            return std::nullopt;
+        }
+
+        if (node.primitive_count != 0)
+        {
+            for (u32 idx = node.first_primitive_idx; idx < node.primitive_count + node.first_primitive_idx; ++idx)
+            {
+                debug_intersection_tests += node.primitive_count;
+                std::optional<SurfaceIntersection> intersection =
+                    m_primitives[m_primitive_indices[idx]]->intersect(r, tmin, tmax);
+                if (intersection)
+                {
+                    return intersection;
+                }
+            }
+            return std::nullopt;
+        }
+        else
+        {
+            if (const auto intersection = intersect(r, tmin, tmax, node.left_child); intersection)
+            {
+                return intersection;
+            }
+            return intersect(r, tmin, tmax, node.left_child + 1);
+        }
+    }
+
   protected:
     bool                             m_dirty{ true };
     std::vector<BVHNode>             m_nodes;
     std::vector<GeometricPrimitive*> m_primitives;
     std::vector<u32>                 m_primitive_indices;
+public:
+    mutable u32 debug_intersection_tests = 0;
 };
 
 }; // namespace radiant
