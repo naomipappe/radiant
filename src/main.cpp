@@ -56,12 +56,10 @@ int main(int argc, char* argv[])
     std::vector<std::shared_ptr<StaticTriangleMesh>> global_meshes{};
     Triangle::g_meshes = &global_meshes;
 
-    auto [mesh, triangles] = import_mesh("../assets/cube/cube.obj");
+    auto [mesh, triangles] = import_mesh("../assets/bunny/bunny.obj");
+    fmt::println("Triangle count in an imported mesh {}",triangles.size());
 
     std::shared_ptr<radiant::Sphere> ground_sphere = std::make_shared<radiant::Sphere>(vec3(0.0, -101, -1.0), 100.0);
-    std::shared_ptr<radiant::Sphere> left_sphere   = std::make_shared<radiant::Sphere>(vec3(-1.1f, 0.0f, -1.0f), 0.5f);
-    std::shared_ptr<radiant::Sphere> right_sphere  = std::make_shared<radiant::Sphere>(vec3(0.0f, 0.0f, -1.2f), 0.5f);
-    std::shared_ptr<radiant::Sphere> center_sphere = std::make_shared<radiant::Sphere>(vec3(0.0f, 1.2f, 0.0f), 0.5f);
 
     std::shared_ptr<Lambertian> material_ground = std::make_shared<Lambertian>(rgb_color(0.8f, 0.8f, 0.0f));
     std::shared_ptr<Lambertian> material_center = std::make_shared<Lambertian>(rgb_color(0.1f, 0.2f, 0.5f));
@@ -77,11 +75,9 @@ int main(int argc, char* argv[])
         triangle_prims.push_back(std::make_shared<GeometricPrimitive>(triangle, triangle_mat));
     }
     std::shared_ptr<GeometricPrimitive> ground = std::make_shared<GeometricPrimitive>(ground_sphere, material_ground);
-    std::shared_ptr<GeometricPrimitive> center = std::make_shared<GeometricPrimitive>(center_sphere, material_right);
 
     BVHAggregate aggregate;
     // Populate the scene
-    aggregate.insert(center.get());
     aggregate.insert(ground.get());
     for (const auto& triangle_prim : triangle_prims)
     {
@@ -93,6 +89,8 @@ int main(int argc, char* argv[])
     // Render the scene to the image buffer
     RenderTarget target{};
     camera.render(&aggregate, target);
+
+    fmt::println("Tested {} triangles",aggregate.debug_intersection_tests);
 
     fmt::println("Writing to {}", destination.string());
     garbage::write_png(target.render_target.data(), target.width, target.height, destination);
