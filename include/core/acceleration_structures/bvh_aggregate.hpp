@@ -161,6 +161,8 @@ class BVHAggregate : public Aggregate
 
         if (node.primitive_count != 0)
         {
+            std::optional<SurfaceIntersection> closest;
+
             for (u32 idx = node.first_primitive_idx; idx < node.primitive_count + node.first_primitive_idx; ++idx)
             {
                 debug_intersection_tests += node.primitive_count;
@@ -168,19 +170,28 @@ class BVHAggregate : public Aggregate
                     m_primitives[m_primitive_indices[idx]]->intersect(r, tmin, tmax);
                 if (intersection)
                 {
-                    return intersection;
+                    if (!closest || intersection->m_t < closest->m_t)
+                    {
+                        closest = intersection;
+                    }
                 }
             }
-            return std::nullopt;
+            return closest;
         }
-        else
+        std::optional<SurfaceIntersection> closest;
+        if (const auto intersection = intersect(r, tmin, tmax, node.left_child); intersection)
         {
-            if (const auto intersection = intersect(r, tmin, tmax, node.left_child); intersection)
-            {
-                return intersection;
-            }
-            return intersect(r, tmin, tmax, node.left_child + 1);
+            closest = intersection;
         }
+
+        if (const auto intersection = intersect(r, tmin, tmax, node.left_child + 1); intersection)
+        {
+            if (!closest || intersection->m_t < closest->m_t)
+            {
+                closest = intersection;
+            }
+        }
+        return closest;
     }
 
   protected:
@@ -188,7 +199,8 @@ class BVHAggregate : public Aggregate
     std::vector<BVHNode>             m_nodes;
     std::vector<GeometricPrimitive*> m_primitives;
     std::vector<u32>                 m_primitive_indices;
-public:
+
+  public:
     mutable u32 debug_intersection_tests = 0;
 };
 
