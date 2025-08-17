@@ -39,12 +39,12 @@ int main(int argc, char* argv[])
     }
 
     CameraSettings settings{};
-    settings.m_image_width       = 800;
-    settings.m_samples_per_pixel = 4;
-    settings.m_ray_bounces       = 5;
+    settings.m_image_width       = 1920;
+    settings.m_samples_per_pixel = 16;
+    settings.m_ray_bounces       = 50;
     settings.m_vfow_deg          = 20;
 
-    settings.m_look_from      = vec3(10.0f, 0.0f, 10.0f);
+    settings.m_look_from      = vec3(-8.0f, 0.0f, 0.5f);
     settings.m_look_at        = vec3(0.0f, 0.0f, 0.0f);
     settings.m_world_up       = vec3(0.0f, 1.0f, 0.0f);
     settings.m_defocus_angle  = 0.1;
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
     std::vector<std::shared_ptr<StaticTriangleMesh>> global_meshes{};
     Triangle::g_meshes = &global_meshes;
 
-    auto [mesh, triangles] = import_mesh("../assets/bunny/bunny.obj");
+    auto [mesh, triangles] = import_mesh("../assets/dragon/dragon.obj");
     fmt::println("Triangle count in an imported mesh {}",triangles.size());
 
     std::shared_ptr<radiant::Sphere> ground_sphere = std::make_shared<radiant::Sphere>(vec3(0.0, -101, -1.0), 100.0);
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
     std::shared_ptr<Lambertian> material_ground = std::make_shared<Lambertian>(rgb_color(0.8f, 0.8f, 0.0f));
     std::shared_ptr<Lambertian> material_center = std::make_shared<Lambertian>(rgb_color(0.1f, 0.2f, 0.5f));
     std::shared_ptr<Dielectric> material_left   = std::make_shared<Dielectric>(1.0 / 1.33);
-    std::shared_ptr<Metal>      material_right  = std::make_shared<Metal>(rgb_color(0.8f, 0.6f, 0.2f), 0.3f);
+    std::shared_ptr<Metal>      material_right  = std::make_shared<Metal>(rgb_color(0.0, 66.0 / 256.0, 37.0 / 256.0), 0.1f);
     std::shared_ptr<Lambertian> triangle_mat    = std::make_shared<Lambertian>(rgb_color(0.0, 66.0 / 256.0, 37.0 / 256.0));
 
     std::vector<std::shared_ptr<GeometricPrimitive>> triangle_prims;
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 
     for (const auto& triangle : triangles)
     {
-        triangle_prims.push_back(std::make_shared<GeometricPrimitive>(triangle, triangle_mat));
+        triangle_prims.push_back(std::make_shared<GeometricPrimitive>(triangle, material_left));
     }
     std::shared_ptr<GeometricPrimitive> ground = std::make_shared<GeometricPrimitive>(ground_sphere, material_ground);
 

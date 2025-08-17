@@ -80,7 +80,7 @@ class BVHAggregate : public Aggregate
     {
         BVHNode& node = m_nodes[node_idx];
         node.aabb_min = vec3(std::numeric_limits<Scalar>::max());
-        node.aabb_max = vec3(-std::numeric_limits<Scalar>::max());
+        node.aabb_max = vec3(std::numeric_limits<Scalar>::lowest());
         for (u32 offset = node.first_primitive_idx, p = 0; p < node.primitive_count; ++p)
         {
             u32         tri_idx   = m_primitive_indices[offset + p];
@@ -162,29 +162,33 @@ class BVHAggregate : public Aggregate
         if (node.primitive_count != 0)
         {
             std::optional<SurfaceIntersection> closest;
+            Scalar                             curtmax = tmax;
 
             for (u32 idx = node.first_primitive_idx; idx < node.primitive_count + node.first_primitive_idx; ++idx)
             {
-                debug_intersection_tests += node.primitive_count;
+                debug_intersection_tests++;
                 std::optional<SurfaceIntersection> intersection =
-                    m_primitives[m_primitive_indices[idx]]->intersect(r, tmin, tmax);
+                    m_primitives[m_primitive_indices[idx]]->intersect(r, tmin, curtmax);
                 if (intersection)
                 {
                     if (!closest || intersection->m_t < closest->m_t)
                     {
                         closest = intersection;
+                        curtmax = closest->m_t;
                     }
                 }
             }
             return closest;
         }
         std::optional<SurfaceIntersection> closest;
+        Scalar                             curtmax = tmax;
         if (const auto intersection = intersect(r, tmin, tmax, node.left_child); intersection)
         {
             closest = intersection;
+            curtmax = intersection->m_t;
         }
 
-        if (const auto intersection = intersect(r, tmin, tmax, node.left_child + 1); intersection)
+        if (const auto intersection = intersect(r, tmin, curtmax, node.left_child + 1); intersection)
         {
             if (!closest || intersection->m_t < closest->m_t)
             {
