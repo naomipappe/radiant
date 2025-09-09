@@ -29,13 +29,24 @@ int main(int argc, char* argv[])
     fmt::println("Arguments {}", *argv);
 
     std::filesystem::path destination;
-    if (argc == 2)
+
+    std::filesystem::path asset_source;
+    // TODO: proper argument parsing and cmd-line interface (python script?)
+    if (argc >= 2)
     {
         destination = std::filesystem::path(argv[1]);
     }
     else
     {
         destination = std::filesystem::current_path().parent_path() / "render.png";
+    }
+    if (argc >= 3)
+    {
+        asset_source = std::filesystem::path(argv[2]);
+    }
+    else
+    {
+        asset_source = std::filesystem::path("../assets/cube/cube.obj");
     }
 
     CameraSettings settings{};
@@ -56,10 +67,11 @@ int main(int argc, char* argv[])
     std::vector<std::shared_ptr<StaticTriangleMesh>> global_meshes{};
     Triangle::g_meshes = &global_meshes;
 
-    auto [mesh, triangles] = import_mesh("../assets/dragon/dragon.obj");
-    fmt::println("Triangle count in an imported mesh {}",triangles.size());
+    // TODO: use std::filesystem::path
+    auto [mesh, triangles] = import_mesh(asset_source);
+    fmt::println("Triangle count in an imported mesh {}", triangles.size());
 
-    std::shared_ptr<radiant::Sphere> ground_sphere = std::make_shared<radiant::Sphere>(vec3(0.0, -101, -1.0), 100.0);
+    std::shared_ptr<radiant::Sphere> ground_sphere = std::make_shared<Sphere>(vec3(0.0, -101, -1.0), 100.0);
 
     std::shared_ptr<Lambertian> material_ground = std::make_shared<Lambertian>(rgb_color(0.8f, 0.8f, 0.0f));
     std::shared_ptr<Lambertian> material_center = std::make_shared<Lambertian>(rgb_color(0.1f, 0.2f, 0.5f));
@@ -90,7 +102,11 @@ int main(int argc, char* argv[])
     RenderTarget target{};
     camera.render(&aggregate, target);
 
-    fmt::println("Tested {} triangles",aggregate.debug_intersection_tests);
+    fmt::println("Performed {} intersection tests for {} image size",
+                 aggregate.debug_intersection_tests,
+                 settings.m_image_width * settings.m_image_height);
+    fmt::println("Performed {} intersection tests per pixel",
+                 aggregate.debug_intersection_tests / settings.m_image_width * settings.m_image_height);
 
     fmt::println("Writing to {}", destination.string());
     garbage::write_png(target.render_target.data(), target.width, target.height, destination);
