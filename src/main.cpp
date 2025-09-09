@@ -67,14 +67,14 @@ int main(int argc, char* argv[])
     std::shared_ptr<Metal>      material_right  = std::make_shared<Metal>(rgb_color(0.0, 66.0 / 256.0, 37.0 / 256.0), 0.1f);
     std::shared_ptr<Lambertian> triangle_mat    = std::make_shared<Lambertian>(rgb_color(0.0, 66.0 / 256.0, 37.0 / 256.0));
 
-    std::vector<std::shared_ptr<GeometricPrimitive>> triangle_prims;
+    std::vector<std::shared_ptr<Primitive>> triangle_prims;
     triangle_prims.reserve(triangles.size());
 
     for (const auto& triangle : triangles)
     {
-        triangle_prims.push_back(std::make_shared<GeometricPrimitive>(triangle, material_left));
+        triangle_prims.push_back(std::make_shared<Primitive>(triangle, triangle_mat));
     }
-    std::shared_ptr<GeometricPrimitive> ground = std::make_shared<GeometricPrimitive>(ground_sphere, material_ground);
+    std::shared_ptr<Primitive> ground = std::make_shared<Primitive>(ground_sphere, material_ground);
 
     BVHAggregate aggregate;
     // Populate the scene

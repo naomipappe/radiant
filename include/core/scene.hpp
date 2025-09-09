@@ -14,7 +14,7 @@ struct Scene
 {
     std::vector<std::shared_ptr<StaticTriangleMesh>> m_meshes;
     std::vector<std::shared_ptr<Material>>           m_materials;
-    std::vector<std::shared_ptr<GeometricPrimitive>> m_primitives;
+    std::vector<std::shared_ptr<Primitive>> m_primitives;
 };
 
 } // namespace radiant

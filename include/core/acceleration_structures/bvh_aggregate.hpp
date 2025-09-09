@@ -28,7 +28,7 @@ struct BVHNode
 class BVHAggregate : public Aggregate
 {
   public:
-    explicit BVHAggregate(std::span<GeometricPrimitive*> primitives) : m_primitives(primitives.begin(), primitives.end())
+    explicit BVHAggregate(std::span<Primitive*> primitives) : m_primitives(primitives.begin(), primitives.end())
     {
         build(primitives);
         m_dirty = false;
@@ -37,7 +37,7 @@ class BVHAggregate : public Aggregate
     BVHAggregate()           = default;
     ~BVHAggregate() override = default;
 
-    void insert(GeometricPrimitive* primitive) override
+    void insert(Primitive* primitive) override
     {
         m_primitives.push_back(primitive);
         m_dirty = true;
@@ -63,7 +63,7 @@ class BVHAggregate : public Aggregate
     }
 
   protected:
-    void build(const std::span<GeometricPrimitive*> primitives)
+    void build(const std::span<Primitive*> primitives)
     {
         m_nodes.reserve(2 * primitives.size() - 1);
         m_primitive_indices.resize(m_primitives.size());
@@ -201,7 +201,7 @@ class BVHAggregate : public Aggregate
   protected:
     bool                             m_dirty{ true };
     std::vector<BVHNode>             m_nodes;
-    std::vector<GeometricPrimitive*> m_primitives;
+    std::vector<Primitive*> m_primitives;
     std::vector<u32>                 m_primitive_indices;
 
   public:

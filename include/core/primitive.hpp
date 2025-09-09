@@ -15,36 +15,27 @@ namespace radiant
 
 struct Primitive
 {
-    virtual ~Primitive()                                                                                       = default;
-    virtual bool                               test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const = 0;
-    virtual std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const         = 0;
-};
-
-struct GeometricPrimitive : public Primitive
-{
-    GeometricPrimitive(const std::shared_ptr<Shape>& shape, const std::shared_ptr<Material>& material) :
+    Primitive(const std::shared_ptr<Shape>& shape, const std::shared_ptr<Material>& material) :
         m_shape(shape), m_material(material)
     {}
 
-    virtual ~GeometricPrimitive() override = default;
-
-    bool test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const override
+    [[nodiscard]] bool test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const
     {
         return m_shape->test_intersection(r, tmin, tmax);
     }
 
-    std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override
+    [[nodiscard]] std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const
     {
-        std::optional<SurfaceIntersection> intersection = m_shape->intersect(r, tmin, tmax);
-        if (intersection)
+        if (std::optional<SurfaceIntersection> intersection = m_shape->intersect(r, tmin, tmax))
         {
             intersection->m_material = m_material.get();
             return intersection;
         }
         return std::nullopt;
     }
-    virtual vec3 aabb_min() const { return m_shape->aabb_min; }
-    virtual vec3 aabb_max() const { return m_shape->aabb_max; }
+
+    [[nodiscard]] vec3 aabb_min() const { return m_shape->aabb_min; }
+    [[nodiscard]] vec3 aabb_max() const { return m_shape->aabb_max; }
 
     std::shared_ptr<Shape>    m_shape;
     std::shared_ptr<Material> m_material;
