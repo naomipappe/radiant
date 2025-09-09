@@ -18,11 +18,12 @@ template <typename T>
 class BufferStorage
 {
   public:
-    static BufferStorage<T>& instance()
+    static BufferStorage& instance()
     {
-        static BufferStorage<T> instance_;
+        static BufferStorage instance_;
         return instance_;
     }
+
     BufferStorage(const BufferStorage&)            = delete;
     BufferStorage& operator=(const BufferStorage&) = delete;
 
@@ -48,7 +49,7 @@ class BufferStorage
         u64      m_hash{};
 
         Buffer() = default;
-        Buffer(std::span<const T> data) : m_data(data.data()), m_size(data.size()) { m_hash = hash(*this); }
+        explicit Buffer(std::span<const T> data) : m_data(data.data()), m_size(data.size()) { m_hash = hash(*this); }
 
         bool operator==(const Buffer& b) const
         {
@@ -89,21 +90,21 @@ class BufferStorage
         switch (buffer.m_size & 7)
         {
             case 7:
-                h ^= u64(data[6]) << 48;
+                h ^= static_cast<u64>(data[6]) << 48;
             case 6:
-                h ^= u64(data[5]) << 40;
+                h ^= static_cast<u64>(data[5]) << 40;
             case 5:
-                h ^= u64(data[4]) << 32;
+                h ^= static_cast<u64>(data[4]) << 32;
             case 4:
-                h ^= u64(data[3]) << 24;
+                h ^= static_cast<u64>(data[3]) << 24;
             case 3:
-                h ^= u64(data[2]) << 16;
+                h ^= static_cast<u64>(data[2]) << 16;
             case 2:
-                h ^= u64(data[1]) << 8;
+                h ^= static_cast<u64>(data[1]) << 8;
             case 1:
-                h ^= u64(data[0]);
+                h ^= static_cast<u64>(data[0]);
                 h *= m;
-        };
+        }
 
         h ^= h >> r;
         h *= m;

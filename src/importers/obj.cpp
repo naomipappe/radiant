@@ -25,45 +25,51 @@ std::pair<std::shared_ptr<StaticTriangleMesh>, std::vector<std::shared_ptr<Trian
         std::abort();
     }
 
-    bool success = rapidobj::Triangulate(result);
-
-    if (!success)
+    if (!rapidobj::Triangulate(result))
     {
         std::abort();
     }
 
     std::shared_ptr<StaticTriangleMesh> mesh = std::make_shared<StaticTriangleMesh>();
 
-    const auto& attrib = result.attributes;
-    const auto& shapes = result.shapes;
+    const rapidobj::Attributes& attrib = result.attributes;
+    const rapidobj::Shapes& shapes = result.shapes;
 
     std::vector<vec3>     positions;
     std::vector<vec3>     normals;
     std::vector<uint32_t> indices;
 
-    for (const auto& shape : shapes)
+    u64 reserve_positions = 0;
+    u64 reserve_normals   = 0;
+    for (const rapidobj::Shape& shape : shapes)
     {
-        for (const auto& idx : shape.mesh.indices)
+        for (const rapidobj::Index& idx : shape.mesh.indices)
         {
-            vec3 pos(0.0), norm(0.0);
+            reserve_positions += idx.position_index >= 0;
+            reserve_normals += idx.normal_index >= 0;
+        }
+    }
 
-            // Position
+    positions.reserve(reserve_positions);
+    normals.reserve(reserve_normals);
+
+    for (const rapidobj::Shape& shape : shapes)
+    {
+        for (const rapidobj::Index& idx : shape.mesh.indices)
+        {
             if (idx.position_index >= 0)
             {
-                int offset = 3 * idx.position_index;
-                pos        = vec3(attrib.positions[offset + 0], attrib.positions[offset + 1], attrib.positions[offset + 2]);
+                const i32 offset = 3 * idx.position_index;
+                positions.emplace_back(
+                    attrib.positions[offset + 0], attrib.positions[offset + 1], attrib.positions[offset + 2]);
             }
-
-            // Normal
             if (idx.normal_index >= 0)
             {
-                int offset = 3 * idx.normal_index;
-                norm       = vec3(attrib.normals[offset + 0], attrib.normals[offset + 1], attrib.normals[offset + 2]);
+                const i32 offset = 3 * idx.normal_index;
+                normals.emplace_back(attrib.normals[offset + 0], attrib.normals[offset + 1], attrib.normals[offset + 2]);
             }
 
-            positions.push_back(pos);
-            normals.push_back(norm);
-            indices.push_back(static_cast<uint32_t>(indices.size()));
+            indices.push_back(static_cast<u32>(indices.size()));
         }
     }
 
