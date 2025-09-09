@@ -29,7 +29,7 @@ std::optional<SurfaceIntersection> LinearAggregate::intersect(const Ray& r, Scal
     return intersection;
 }
 
-void LinearAggregate::insert(GeometricPrimitive* primitive)
+void LinearAggregate::insert(Primitive* primitive)
 {
     m_primitives.push_back(primitive);
 }
