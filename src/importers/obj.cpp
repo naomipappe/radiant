@@ -15,9 +15,10 @@
 
 namespace radiant
 {
-std::pair<std::shared_ptr<StaticTriangleMesh>, std::vector<std::shared_ptr<Triangle>>> import_mesh(std::string path)
+std::pair<std::shared_ptr<StaticTriangleMesh>, std::vector<std::shared_ptr<Triangle>>>
+import_mesh(const std::filesystem::path& path)
 {
-    rapidobj::Result result = rapidobj::ParseFile(path, rapidobj::MaterialLibrary::Ignore());
+    rapidobj::Result          result = rapidobj::ParseFile(path);
 
     if (result.error)
     {
@@ -33,7 +34,7 @@ std::pair<std::shared_ptr<StaticTriangleMesh>, std::vector<std::shared_ptr<Trian
     std::shared_ptr<StaticTriangleMesh> mesh = std::make_shared<StaticTriangleMesh>();
 
     const rapidobj::Attributes& attrib = result.attributes;
-    const rapidobj::Shapes& shapes = result.shapes;
+    const rapidobj::Shapes&     shapes = result.shapes;
 
     std::vector<vec3>     positions;
     std::vector<vec3>     normals;
