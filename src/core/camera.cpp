@@ -64,7 +64,7 @@ rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 boun
         return zeros<Scalar, 3>();
     }
 
-    std::optional<SurfaceIntersection> intersection = aggregate->intersect(ray, 1e-3f, inf);
+    std::optional<Intersection> intersection = aggregate->intersect(ray, 1e-3f, inf);
     if (intersection)
     {
         rgb_color attenuation = zeros<Scalar, 3>();

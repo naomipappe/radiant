@@ -28,10 +28,8 @@ vec3 pointwise_max(const vec3& a, const vec3& b)
     return vec3(std::max(a[0], b[0]), std::max(a[1], b[1]), std::max(a[2], b[2]));
 }
 
-bool test_intersection_aabb(const Ray& r, vec3 aabb_min, vec3 aabb_max)
+bool test_intersection_aabb(const Ray& r, vec3 aabb_min, vec3 aabb_max, Scalar t_min, Scalar t_max)
 {
-    Scalar t_min = -std::numeric_limits<Scalar>::max();
-    Scalar t_max = std::numeric_limits<Scalar>::max();
     for (u32 axis = 0; axis < 3; ++axis)
     {
         const Scalar inv_d    = 1.0 / r.m_direction[axis];

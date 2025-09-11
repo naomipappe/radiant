@@ -48,7 +48,7 @@ class BVHAggregate : public Aggregate
         return intersect(r, tmin, tmax) != std::nullopt;
     }
 
-    [[nodiscard]] std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override
+    [[nodiscard]] std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override
     {
         return intersect(r, tmin, tmax, 0);
     }
@@ -94,7 +94,7 @@ class BVHAggregate : public Aggregate
     {
         BVHNode& node = m_nodes[node_idx];
 
-        if (node.primitive_count <= 2)
+        if (node.primitive_count <= 12)
         {
             return;
         }
@@ -151,25 +151,28 @@ class BVHAggregate : public Aggregate
         subdivide(right_child);
     }
 
-    [[nodiscard]] std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax, u32 node_idx) const
+    [[nodiscard]] std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax, u32 node_idx) const
     {
-        const BVHNode& node = m_nodes[node_idx];
-        if (!test_intersection_aabb(r, node.aabb_min, node.aabb_max))
+        const BVHNode&                     node = m_nodes[node_idx];
+        std::optional<Intersection> closest;
+
+        if (!test_intersection_aabb(r, node.aabb_min, node.aabb_max, tmin, tmax))
         {
-            return std::nullopt;
+#ifndef NDEBUG
+            ++missed;
+#endif
+            return closest;
         }
 
         if (node.primitive_count != 0)
         {
-            std::optional<SurfaceIntersection> closest;
-            Scalar                             curtmax = tmax;
+            Scalar curtmax = tmax;
 
             for (u32 idx = node.first_primitive_idx; idx < node.primitive_count + node.first_primitive_idx; ++idx)
             {
-                debug_intersection_tests++;
-                std::optional<SurfaceIntersection> intersection =
-                    m_primitives[m_primitive_indices[idx]]->intersect(r, tmin, curtmax);
-                if (intersection)
+                ++intersection_called_counter;
+                ++primitive_intersection_called;
+                if (const auto intersection = m_primitives[m_primitive_indices[idx]]->intersect(r, tmin, curtmax))
                 {
                     if (!closest || intersection->m_t < closest->m_t)
                     {
@@ -178,34 +181,51 @@ class BVHAggregate : public Aggregate
                     }
                 }
             }
-            return closest;
         }
-        std::optional<SurfaceIntersection> closest;
-        Scalar                             curtmax = tmax;
-        if (const auto intersection = intersect(r, tmin, tmax, node.left_child); intersection)
+        else
         {
-            closest = intersection;
-            curtmax = intersection->m_t;
-        }
+            Scalar curtmax = tmax;
 
-        if (const auto intersection = intersect(r, tmin, curtmax, node.left_child + 1); intersection)
-        {
-            if (!closest || intersection->m_t < closest->m_t)
+            ++intersection_called_counter;
+            ++aabb_intersection_called;
+            if (const auto intersection = intersect(r, tmin, tmax, node.left_child); intersection)
             {
                 closest = intersection;
+                curtmax = intersection->m_t;
+            }
+
+            ++intersection_called_counter;
+            ++aabb_intersection_called;
+            if (const auto intersection = intersect(r, tmin, curtmax, node.left_child + 1); intersection)
+            {
+                if (!closest || intersection->m_t < closest->m_t)
+                {
+                    closest = intersection;
+                }
             }
         }
+
+#ifndef NDEBUG
+        if (!closest)
+        {
+            ++missed;
+        }
+#endif
         return closest;
     }
 
-  protected:
-    bool                             m_dirty{ true };
-    std::vector<BVHNode>             m_nodes;
+  private:
+    bool                    m_dirty{ true };
+    std::vector<BVHNode>    m_nodes;
     std::vector<Primitive*> m_primitives;
-    std::vector<u32>                 m_primitive_indices;
-
+    std::vector<u32>        m_primitive_indices;
+#ifndef NDEBUG
   public:
-    mutable u32 debug_intersection_tests = 0;
+    mutable uint64_t intersection_called_counter   = 0;
+    mutable uint64_t primitive_intersection_called = 0;
+    mutable uint64_t missed                        = 0;
+    mutable uint64_t aabb_intersection_called      = 0;
+#endif
 };
 
 }; // namespace radiant

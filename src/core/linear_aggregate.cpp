@@ -11,12 +11,12 @@ bool LinearAggregate::test_intersection(const Ray& r, Scalar tmin, Scalar tmax) 
 {
     return intersect(r, tmin, tmax) != std::nullopt;
 }
-std::optional<SurfaceIntersection> LinearAggregate::intersect(const Ray& r, Scalar tmin, Scalar tmax) const
+std::optional<Intersection> LinearAggregate::intersect(const Ray& r, Scalar tmin, Scalar tmax) const
 {
-    std::optional<SurfaceIntersection> intersection = std::nullopt;
+    std::optional<Intersection> intersection = std::nullopt;
     Scalar                             closest      = tmax;
 
-    std::optional<SurfaceIntersection> iterator;
+    std::optional<Intersection> iterator;
     for (const Primitive* primitive : m_primitives)
     {
         iterator = primitive->intersect(r, tmin, tmax);

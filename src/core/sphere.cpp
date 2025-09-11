@@ -18,11 +18,11 @@ Sphere::Sphere(const vec3& center, Scalar radius) : m_radius(std::fmax(0, radius
 
 bool Sphere::test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const
 {
-    std::optional<SurfaceIntersection> intersection = intersect(r, tmin, tmax);
+    std::optional<Intersection> intersection = intersect(r, tmin, tmax);
     return intersection.has_value();
 }
 
-std::optional<SurfaceIntersection> Sphere::intersect(const Ray& r, Scalar tmin, Scalar tmax) const
+std::optional<Intersection> Sphere::intersect(const Ray& r, Scalar tmin, Scalar tmax) const
 {
     const vec3   center_to_ray_origin = m_centroid - r.m_origin;
     const Scalar a                    = r.m_direction.length_squared();
@@ -57,6 +57,6 @@ std::optional<SurfaceIntersection> Sphere::intersect(const Ray& r, Scalar tmin, 
     vec3 p              = r.at(root);
     vec3 outward_normal = (p - m_centroid) / m_radius;
 
-    return std::make_optional<SurfaceIntersection>(p, outward_normal, root);
+    return std::make_optional<Intersection>(p, outward_normal, root);
 }
 } // namespace radiant
