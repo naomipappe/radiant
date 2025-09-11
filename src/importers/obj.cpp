@@ -4,7 +4,6 @@
 
 #include "core/cache/buffer_storage.hpp"
 #include "core/shapes/triangle.hpp"
-#include "core/triangle_mesh.hpp"
 #include "core/types.hpp"
 #include "fmt/base.h"
 #include "fmt/printf.h"
@@ -15,10 +14,9 @@
 
 namespace radiant
 {
-std::pair<std::shared_ptr<StaticTriangleMesh>, std::vector<std::shared_ptr<Triangle>>>
-import_mesh(const std::filesystem::path& path)
+Mesh import_mesh(const std::filesystem::path& path)
 {
-    rapidobj::Result          result = rapidobj::ParseFile(path);
+    rapidobj::Result result = rapidobj::ParseFile(path);
 
     if (result.error)
     {
@@ -31,7 +29,7 @@ import_mesh(const std::filesystem::path& path)
         std::abort();
     }
 
-    std::shared_ptr<StaticTriangleMesh> mesh = std::make_shared<StaticTriangleMesh>();
+    Mesh mesh{};
 
     const rapidobj::Attributes& attrib = result.attributes;
     const rapidobj::Shapes&     shapes = result.shapes;
@@ -74,22 +72,13 @@ import_mesh(const std::filesystem::path& path)
         }
     }
 
-    mesh->m_positions = BufferStorage<vec3>::instance().store(positions);
-    mesh->m_normals   = BufferStorage<vec3>::instance().store(normals);
-    mesh->m_indices   = BufferStorage<u32>::instance().store(indices);
+    mesh.m_positions = BufferStorage<vec3>::instance().store(positions);
+    mesh.m_normals   = BufferStorage<vec3>::instance().store(normals);
+    mesh.m_indices   = BufferStorage<u32>::instance().store(indices);
 
-    mesh->m_num_triangles = indices.size() / 3;
-    mesh->m_num_positions = positions.size();
+    mesh.m_num_triangles = indices.size() / 3;
+    mesh.m_num_positions = positions.size();
 
-    u32 mesh_idx = Triangle::g_meshes->size();
-    Triangle::g_meshes->push_back(mesh);
-    std::vector<std::shared_ptr<Triangle>> triangles;
-    triangles.reserve(mesh->m_num_triangles);
-    for (u32 t = 0; t < mesh->m_num_triangles; ++t)
-    {
-        triangles.emplace_back(std::make_shared<Triangle>(mesh_idx, t));
-    }
-
-    return { mesh, triangles };
+    return mesh;
 }
 } // namespace radiant

@@ -4,7 +4,6 @@
 #include "core/material.hpp"
 #include "core/primitive.hpp"
 #include "core/render_target.hpp"
-#include "core/triangle_mesh.hpp"
 #include "fmt/base.h"
 #include "importers/obj.hpp"
 #include <garbage/garbage_dump.hpp>
@@ -63,12 +62,17 @@ int main(int argc, char* argv[])
 
     Camera camera(settings);
 
-    // BAD
-    std::vector<std::shared_ptr<StaticTriangleMesh>> global_meshes{};
-    Triangle::g_meshes = &global_meshes;
+    u32   mesh_idx = meshes.size();
+    Mesh& mesh     = meshes.emplace_back(import_mesh(asset_source));
 
-    // TODO: use std::filesystem::path
-    auto [mesh, triangles] = import_mesh(asset_source);
+    std::vector<std::shared_ptr<Triangle>> triangles;
+    triangles.reserve(mesh.m_num_triangles);
+
+    for (u32 t = 0; t < mesh.m_num_triangles; ++t)
+    {
+        triangles.emplace_back(std::make_shared<Triangle>(mesh_idx, t));
+    }
+
     fmt::println("Triangle count in an imported mesh {}", triangles.size());
 
     std::shared_ptr<radiant::Sphere> ground_sphere = std::make_shared<Sphere>(vec3(0.0, -101, -1.0), 100.0);
@@ -102,11 +106,17 @@ int main(int argc, char* argv[])
     RenderTarget target{};
     camera.render(&aggregate, target);
 
-    fmt::println("Performed {} intersection tests for {} image size",
-                 aggregate.debug_intersection_tests,
-                 settings.m_image_width * settings.m_image_height);
-    fmt::println("Performed {} intersection tests per pixel",
-                 aggregate.debug_intersection_tests / settings.m_image_width * settings.m_image_height);
+    // TODO: Make collecting counters and stats more easy then ifdef
+#ifndef NDEBUG
+    fmt::println("{} total intersection calls ", aggregate.intersection_called_counter);
+    fmt::println("{} primitive intersection calls ", aggregate.primitive_intersection_called);
+    fmt::println("{} aabb intersection calls ", aggregate.aabb_intersection_called);
+    assert(aggregate.intersection_called_counter ==
+           aggregate.primitive_intersection_called + aggregate.aabb_intersection_called);
+    fmt::println("Emitted {} primary rays", settings.m_image_height * settings.m_image_width * settings.m_samples_per_pixel);
+    fmt::println("{} rays did not hit", aggregate.missed);
+
+#endif
 
     fmt::println("Writing to {}", destination.string());
     garbage::write_png(target.render_target.data(), target.width, target.height, destination);

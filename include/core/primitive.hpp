@@ -5,7 +5,7 @@
 
 #include <core/vec.hpp>
 #include <core/ray.hpp>
-#include <core/surface_interaction.hpp>
+#include <core/intersection.hpp>
 #include <core/shapes/shape.hpp>
 #include <core/material.hpp>
 
@@ -24,9 +24,9 @@ struct Primitive
         return m_shape->test_intersection(r, tmin, tmax);
     }
 
-    [[nodiscard]] std::optional<SurfaceIntersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const
+    [[nodiscard]] std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const
     {
-        if (std::optional<SurfaceIntersection> intersection = m_shape->intersect(r, tmin, tmax))
+        if (std::optional<Intersection> intersection = m_shape->intersect(r, tmin, tmax))
         {
             intersection->m_material = m_material.get();
             return intersection;
