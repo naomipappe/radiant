@@ -1,61 +1,50 @@
 #pragma once
 
-#include "core/color.hpp"
 #include "core/ray.hpp"
-#include <core/primitive.hpp>
 #include <optional>
 
 // Rebuild with dependency inhection -> BxDF, Textures can be plugged in, configured during creation
 // Look at PBRT for inspiration (or not)
 namespace radiant
 {
-class Material
+struct Material
 {
-  public:
     virtual ~Material() {};
 
-    virtual std::optional<Ray> scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const
-    {
-        return std::nullopt;
-    }
+    virtual Ray scatter(const Ray& ray, Intersection& intersection, vec3& attenuation) const = 0;
+    vec3        m_emissive;
 };
 
-class Lambertian : public Material
+struct Lambertian : Material
 {
-  public:
-    explicit Lambertian(const rgb_color& albedo);
-    std::optional<Ray> scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const override;
+    explicit Lambertian(const vec3& albedo);
+    Ray scatter(const Ray& ray, Intersection& intersection, vec3& attenuation) const override;
     virtual ~Lambertian() {}
 
-  private:
-    rgb_color m_albedo;
+    vec3 m_albedo;
 };
 
-class Metal : public Material
+struct Metal : Material
 {
-  public:
-    Metal(const rgb_color& albedo, Scalar roughness);
+    Metal(const vec3& albedo, Scalar roughness);
 
-    std::optional<Ray> scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const override;
+    Ray scatter(const Ray& ray, Intersection& intersection, vec3& attenuation) const override;
     virtual ~Metal() {}
 
-  private:
-    rgb_color m_albedo; // Notice that both materials have albedo
-    Scalar    m_roughness;
+    vec3   m_albedo; // Notice that both materials have albedo
+    Scalar m_roughness;
 };
 
-class Dielectric : public Material
+struct Dielectric : Material
 {
-  public:
+
     explicit Dielectric(Scalar effective_refraction_index);
 
-    std::optional<Ray> scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const override;
+    Ray scatter(const Ray& ray, Intersection& intersection, vec3& attenuation) const override;
     virtual ~Dielectric() {};
 
-  private:
     Scalar reflectance(Scalar cosine, Scalar refraction_index) const;
 
-  private:
     Scalar m_effective_refraction_index;
 };
 } // namespace radiant

@@ -1,5 +1,4 @@
 #include "core/acceleration_structures/aggregate.hpp"
-#include "core/color.hpp"
 #include "core/math.hpp"
 #include "core/ray.hpp"
 #include "core/render_target.hpp"
@@ -57,35 +56,27 @@ void Camera::init(const CameraSettings& settings)
     m_defocus_disk_v      = m_v * defocus_radius;
 }
 
-rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce)
+vec3 Camera::trace(const Ray& ray, const Aggregate* aggregate)
 {
-    if (bounce >= m_settings.m_ray_bounces)
+    vec3 L          = zeros<Scalar, 3>();
+    vec3 throughput = ones<Scalar, 3>();
+    Ray  r          = ray;
+    for (uint32_t i = 0; i < m_settings.m_ray_bounces; ++i)
     {
-        return zeros<Scalar, 3>();
-    }
-
-    std::optional<Intersection> intersection = aggregate->intersect(ray, 1e-3f, inf);
-    if (intersection)
-    {
-        rgb_color attenuation = zeros<Scalar, 3>();
-
-        assert(intersection->m_material != nullptr);
-        std::optional<Ray> scattered = intersection->m_material->scatter(ray, intersection.value(), attenuation);
-        if (scattered)
+        if (auto intersect = aggregate->intersect(r, 1e-3, inf))
         {
-            return attenuation * ray_color(scattered.value(), aggregate, bounce + 1);
+            L += throughput * intersect->m_material->m_emissive;
+            vec3 color_mat;
+            r = intersect->m_material->scatter(r, intersect.value(), color_mat);
+            throughput *= color_mat;
         }
         else
         {
-            return zeros<Scalar, 3>();
+            L += throughput * 0;
+            break;
         }
     }
-
-    vec3   udir  = normalized(ray.m_direction);
-    Scalar blend = 0.5 * (udir[1] + 1.0);
-
-    rgb_color result = (1.0 - blend) * rgb_color(1.0, 1.0, 1.0) + blend * rgb_color(0.5, 0.7, 1.0);
-    return result;
+    return L;
 }
 
 void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
@@ -102,11 +93,11 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
     {
         for (u32 u = 0; u < m_settings.m_image_width; ++u)
         {
-            rgb_color sampled_color = zeros<Scalar, 3>();
+            vec3 sampled_color = zeros<Scalar, 3>();
             for (u32 sample = 0; sample < m_settings.m_samples_per_pixel; ++sample)
             {
                 // Jitter the ray around the pixel center
-                sampled_color += ray_color(jittered_ray(u, v), aggregate, 0);
+                sampled_color += trace(jittered_ray(u, v), aggregate);
             }
             render_target.render_target[u + v * m_settings.m_image_width] = sampled_color * m_settings.m_sampling_scale;
         }
@@ -129,7 +120,7 @@ Ray Camera::jittered_ray(u32 u, u32 v)
     vec3 sample_loc = m_settings.m_pixel_00_loc + ((u + jitter_offset[0]) * m_settings.m_pixel_delta_u) +
                       ((v + jitter_offset[1]) * m_settings.m_pixel_delta_v);
     vec3 ray_direction = normalized(sample_loc - m_settings.m_position);
-    vec3 ray_origin    = vec3(m_settings.m_defocus_angle <= 0.0 ? m_settings.m_position.m_data : sample_defocus_disk().m_data);
+    vec3 ray_origin = vec3(m_settings.m_defocus_angle <= 0.0 ? m_settings.m_position.m_data : sample_defocus_disk().m_data);
     return Ray(ray_origin, ray_direction);
 }
 

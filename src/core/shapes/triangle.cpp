@@ -1,3 +1,6 @@
+#include <cassert>
+
+#include "core/math.hpp"
 #include <core/shapes/triangle.hpp>
 
 namespace radiant
@@ -19,12 +22,12 @@ Triangle::Triangle(u32 mesh_idx, u32 triangle_idx) : m_mesh_index(mesh_idx), m_t
     aabb_max = pointwise_max(aabb_max, p3);
 }
 
-[[nodiscard]] bool Triangle::test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const override
+[[nodiscard]] bool Triangle::test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const
 {
     return intersect(r, tmin, tmax).has_value();
 }
 
-[[nodiscard]] std::optional<Intersection> Triangle::intersect(const Ray& r, Scalar tmin, Scalar tmax) const override
+[[nodiscard]] std::optional<Intersection> Triangle::intersect(const Ray& r, Scalar tmin, Scalar tmax) const
 {
     assert(tmin > 0);
     const u32*  indices = &meshes[m_mesh_index].m_indices[3 * m_triangle_index];
