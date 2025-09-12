@@ -4,16 +4,14 @@
 #include <core/ray.hpp>
 #include <core/types.hpp>
 #include <core/vec.hpp>
-#include <fmt/base.h>
-#include <fmt/ranges.h>
 #include <core/material.hpp>
 #include <optional>
 namespace radiant
 {
 
-Lambertian::Lambertian(const rgb_color& albedo) : m_albedo(albedo) {}
+Lambertian::Lambertian(const vec3& albedo) : m_albedo(albedo) {}
 
-std::optional<Ray> Lambertian::scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const
+Ray Lambertian::scatter(const Ray& ray, Intersection& intersection, vec3& attenuation) const
 {
     vec3 scattering_direction = intersection.m_normal + random<Scalar, 3>().normalize();
     if (scattering_direction.is_zero())
@@ -21,22 +19,22 @@ std::optional<Ray> Lambertian::scatter(const Ray& ray, Intersection& intersectio
         scattering_direction = intersection.m_normal;
     }
     attenuation = m_albedo;
-    return std::make_optional<Ray>(intersection.m_intersection, scattering_direction);
+    return { intersection.m_intersection, normalized(scattering_direction) };
 }
 
-Metal::Metal(const rgb_color& albedo, Scalar roughness) : m_albedo(albedo), m_roughness(std::clamp(roughness, 0.0, 1.0)) {}
+Metal::Metal(const vec3& albedo, Scalar roughness) : m_albedo(albedo), m_roughness(std::clamp(roughness, 0.0, 1.0)) {}
 
-std::optional<Ray> Metal::scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const
+Ray Metal::scatter(const Ray& ray, Intersection& intersection, vec3& attenuation) const
 {
     vec3 reflected = reflect(ray.m_direction, intersection.m_normal).normalize();
     reflected += random<Scalar, 3>() * m_roughness;
     attenuation = m_albedo;
-    return std::make_optional<Ray>(intersection.m_intersection, reflected);
+    return { intersection.m_intersection, normalized(reflected) };
 }
 
 Dielectric::Dielectric(Scalar effective_refraction_index) : m_effective_refraction_index(effective_refraction_index) {}
 
-std::optional<Ray> Dielectric::scatter(const Ray& ray, Intersection& intersection, rgb_color& attenuation) const
+Ray Dielectric::scatter(const Ray& ray, Intersection& intersection, vec3& attenuation) const
 {
     attenuation = ones<Scalar, 3>();
     Scalar ri   = m_effective_refraction_index;
@@ -52,16 +50,17 @@ std::optional<Ray> Dielectric::scatter(const Ray& ray, Intersection& intersectio
     vec3   unit_direction = normalized(ray.m_direction);
     Scalar cos_theta      = std::fmin(dot(-unit_direction, intersection.m_normal), 1.0);
     Scalar sin_theta      = std::sqrt(1 - cos_theta * cos_theta);
+
+    vec3 direction;
     if (ri * sin_theta > 1.0 || reflectance(cos_theta, ri) > random<Scalar>())
     {
-        vec3 reflected = reflect(unit_direction, intersection.m_normal);
-        return std::make_optional<Ray>(intersection.m_intersection, reflected);
+        direction = reflect(unit_direction, intersection.m_normal);
     }
     else
     {
-        vec3 refracted = refract(unit_direction, intersection.m_normal, ri);
-        return std::make_optional<Ray>(intersection.m_intersection, refracted);
+        direction = refract(unit_direction, intersection.m_normal, ri);
     }
+    return { intersection.m_intersection, normalized(direction) };
 }
 
 Scalar Dielectric::reflectance(Scalar cosine, Scalar refraction_index) const

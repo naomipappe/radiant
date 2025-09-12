@@ -1,12 +1,9 @@
 #pragma once
 
-#include "fmt/base.h"
-
 #include <limits>
 #include <numeric>
 #include <optional>
 #include <span>
-#include <sys/types.h>
 #include <vector>
 
 #include <core/types.hpp>
@@ -16,6 +13,12 @@
 
 namespace radiant
 {
+
+#ifndef NDEBUG
+#define increment_debug_counter(x) (++x)
+#else
+#define increment_debug_counter(x) ((void)0)
+#endif
 
 struct BVHNode
 {
@@ -53,7 +56,7 @@ class BVHAggregate : public Aggregate
         return intersect(r, tmin, tmax, 0);
     }
 
-    void clear() override {};
+    void clear() override {}
 
     void build()
     {
@@ -94,7 +97,7 @@ class BVHAggregate : public Aggregate
     {
         BVHNode& node = m_nodes[node_idx];
 
-        if (node.primitive_count <= 12)
+        if (node.primitive_count <= PRIMITIVE_COUNT_CUTOFF)
         {
             return;
         }
@@ -153,14 +156,14 @@ class BVHAggregate : public Aggregate
 
     [[nodiscard]] std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax, u32 node_idx) const
     {
-        const BVHNode&                     node = m_nodes[node_idx];
+        const BVHNode&              node = m_nodes[node_idx];
         std::optional<Intersection> closest;
+
+        increment_debug_counter(aabb_test);
 
         if (!test_intersection_aabb(r, node.aabb_min, node.aabb_max, tmin, tmax))
         {
-#ifndef NDEBUG
-            ++missed;
-#endif
+            increment_debug_counter(aabb_reject);
             return closest;
         }
 
@@ -170,8 +173,7 @@ class BVHAggregate : public Aggregate
 
             for (u32 idx = node.first_primitive_idx; idx < node.primitive_count + node.first_primitive_idx; ++idx)
             {
-                ++intersection_called_counter;
-                ++primitive_intersection_called;
+                increment_debug_counter(primitive_intersection_called);
                 if (const auto intersection = m_primitives[m_primitive_indices[idx]]->intersect(r, tmin, curtmax))
                 {
                     if (!closest || intersection->m_t < closest->m_t)
@@ -181,21 +183,21 @@ class BVHAggregate : public Aggregate
                     }
                 }
             }
+            if (!closest)
+            {
+                increment_debug_counter(missed);
+            }
         }
         else
         {
             Scalar curtmax = tmax;
 
-            ++intersection_called_counter;
-            ++aabb_intersection_called;
             if (const auto intersection = intersect(r, tmin, tmax, node.left_child); intersection)
             {
                 closest = intersection;
                 curtmax = intersection->m_t;
             }
 
-            ++intersection_called_counter;
-            ++aabb_intersection_called;
             if (const auto intersection = intersect(r, tmin, curtmax, node.left_child + 1); intersection)
             {
                 if (!closest || intersection->m_t < closest->m_t)
@@ -205,12 +207,6 @@ class BVHAggregate : public Aggregate
             }
         }
 
-#ifndef NDEBUG
-        if (!closest)
-        {
-            ++missed;
-        }
-#endif
         return closest;
     }
 
@@ -219,12 +215,13 @@ class BVHAggregate : public Aggregate
     std::vector<BVHNode>    m_nodes;
     std::vector<Primitive*> m_primitives;
     std::vector<u32>        m_primitive_indices;
+    const u32               PRIMITIVE_COUNT_CUTOFF = 12;
 #ifndef NDEBUG
   public:
-    mutable uint64_t intersection_called_counter   = 0;
     mutable uint64_t primitive_intersection_called = 0;
     mutable uint64_t missed                        = 0;
-    mutable uint64_t aabb_intersection_called      = 0;
+    mutable uint64_t aabb_reject                   = 0;
+    mutable uint64_t aabb_test                     = 0;
 #endif
 };
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/acceleration_structures/aggregate.hpp"
-#include "core/color.hpp"
 #include "core/ray.hpp"
 #include "core/render_target.hpp"
 #include "core/types.hpp"
@@ -46,11 +45,11 @@ class Camera
     void render(const Aggregate* aggregate, RenderTarget& render_target);
 
   private:
-    void      init(const CameraSettings& settings);
-    rgb_color ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce);
-    vec3      sample_square() const;
-    vec3      sample_defocus_disk() const;
-    Ray       jittered_ray(u32 u, u32 v);
+    void init(const CameraSettings& settings);
+    vec3 trace(const Ray& ray, const Aggregate* aggregate);
+    vec3 sample_square() const;
+    vec3 sample_defocus_disk() const;
+    Ray  jittered_ray(u32 u, u32 v);
 
   private:
     CameraSettings m_settings{};
