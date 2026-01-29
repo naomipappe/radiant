@@ -5,10 +5,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(RADIANT_SOURCES 
-src/main.cpp 
-src/garbage/garbage_dump.cpp 
-src/core/sphere.cpp
+set(RADIANT_SOURCES
+src/main.cpp
+src/garbage/garbage_dump.cpp
+src/core/shapes/sphere.cpp
 src/core/linear_aggregate.cpp
 src/core/camera.cpp
 src/core/material.cpp
