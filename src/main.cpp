@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     std::filesystem::path destination;
 
     std::filesystem::path asset_source;
-    // TODO: proper argument parsing and cmd-line interface (python script?)
+
     if (argc >= 2)
     {
         destination = std::filesystem::path(argv[1]);
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
     CameraSettings settings{};
     settings.m_image_width       = 800;
-    settings.m_samples_per_pixel = 100;
+    settings.m_samples_per_pixel = 16;
     settings.m_ray_bounces       = 3;
     settings.m_vfow_deg          = 20;
 
@@ -72,10 +72,10 @@ int main(int argc, char* argv[])
     fmt::println("Triangle count in an imported mesh {}", triangles.size());
 
     std::shared_ptr<Sphere> ground_sphere = std::make_shared<Sphere>(vec3(0.0, -101, -1.0), 100.0);
-    std::shared_ptr<Sphere> light_sphere  = std::make_shared<Sphere>(vec3(4.0, 2, 0.0), 3);
+    std::shared_ptr<Sphere> light_sphere  = std::make_shared<Sphere>(vec3(3.2, 2, 0.0), 3);
 
     std::shared_ptr<Lambertian> material_ground = std::make_shared<Lambertian>(vec3(0.8f, 0.8f, 0.0f));
-    std::shared_ptr<Lambertian> lambertian      = std::make_shared<Lambertian>(vec3(0.1f, 0.2f, 0.5f));
+    std::shared_ptr<Lambertian> lambertian      = std::make_shared<Lambertian>(vec3(0.1f, 0.5f, 0.2f));
     std::shared_ptr<Lambertian> material_light  = std::make_shared<Lambertian>(vec3(1.0f, 1.0f, 1.0f));
     material_light->m_emissive                  = vec3(1.0f, 1.0f, 1.0f);
     std::shared_ptr<Dielectric> dielectric      = std::make_shared<Dielectric>(1.0 / 1.33);
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 
     for (const auto& triangle : triangles)
     {
-        triangle_prims.push_back(std::make_shared<Primitive>(triangle, metal));
+        triangle_prims.push_back(std::make_shared<Primitive>(triangle, lambertian));
     }
 
     std::shared_ptr<Primitive> ground = std::make_shared<Primitive>(ground_sphere, material_ground);

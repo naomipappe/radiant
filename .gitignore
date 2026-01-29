@@ -1,5 +1,6 @@
 build/
 dbuild/
+release/
 
 .vscode/
 .idea/
