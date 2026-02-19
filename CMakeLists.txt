@@ -5,9 +5,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(RADIANT_SOURCES 
-src/main.cpp 
-src/garbage/garbage_dump.cpp 
+set(RADIANT_SOURCES
+src/main.cpp
+src/garbage/garbage_dump.cpp
 src/core/sphere.cpp
 src/core/linear_aggregate.cpp
 src/core/camera.cpp
@@ -17,6 +17,7 @@ src/importers/obj.cpp
 src/core/shapes/triangle.cpp)
 
 add_executable(radiant ${RADIANT_SOURCES})
+target_compile_options(radiant PRIVATE -mavx2 -mfma)
 add_subdirectory(external)
 
 target_include_directories(radiant PRIVATE include)

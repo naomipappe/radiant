@@ -77,11 +77,11 @@ int main(int argc, char* argv[])
 
     std::shared_ptr<radiant::Sphere> ground_sphere = std::make_shared<Sphere>(vec3(0.0, -101, -1.0), 100.0);
 
-    std::shared_ptr<Lambertian> material_ground = std::make_shared<Lambertian>(rgb_color(0.8f, 0.8f, 0.0f));
-    std::shared_ptr<Lambertian> material_center = std::make_shared<Lambertian>(rgb_color(0.1f, 0.2f, 0.5f));
+    std::shared_ptr<Lambertian> material_ground = std::make_shared<Lambertian>(rgba(0.8f, 0.8f, 0.0f, 1.0));
+    std::shared_ptr<Lambertian> material_center = std::make_shared<Lambertian>(rgba(0.1f, 0.2f, 0.5f, 1.0));
     std::shared_ptr<Dielectric> material_left   = std::make_shared<Dielectric>(1.0 / 1.33);
-    std::shared_ptr<Metal>      material_right  = std::make_shared<Metal>(rgb_color(0.0, 66.0 / 256.0, 37.0 / 256.0), 0.1f);
-    std::shared_ptr<Lambertian> triangle_mat    = std::make_shared<Lambertian>(rgb_color(0.0, 66.0 / 256.0, 37.0 / 256.0));
+    std::shared_ptr<Metal>      material_right  = std::make_shared<Metal>(rgba(0.0, 66.0 / 256.0, 37.0 / 256.0, 1.0), 0.1f);
+    std::shared_ptr<Lambertian> triangle_mat    = std::make_shared<Lambertian>(rgba(0.0, 66.0 / 256.0, 37.0 / 256.0, 1.0));
 
     std::vector<std::shared_ptr<Primitive>> triangle_prims;
     triangle_prims.reserve(triangles.size());

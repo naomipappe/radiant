@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <concepts>
 
 namespace radiant
 {
@@ -18,4 +19,7 @@ using f32 = float;
 using f64 = double;
 
 using Scalar = f64;
+
+template <typename V>
+concept ScalarT = (std::is_integral_v<V> && !std::is_same_v<V, bool>) || std::is_floating_point_v<V>;
 } // namespace radiant

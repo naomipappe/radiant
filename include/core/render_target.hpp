@@ -7,7 +7,7 @@ namespace radiant
 {
 struct RenderTarget
 {
-    std::vector<rgb_color> render_target;
+    std::vector<rgba> render_target;
     u32                    width{ 0 }, height{ 0 };
 };
 } // namespace radiant

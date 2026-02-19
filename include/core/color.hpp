@@ -1,27 +1,26 @@
 #pragma once
 
-#include <algorithm>
 #include <core/vec.hpp>
 #include <ostream>
 
 namespace radiant
 {
-// TODO: Always convert the data before presenting or keep the data in a particular format
 
-struct rgb_color : public vec3
+struct rgba : public vec4
 {
-    using vec3::vec3;
+    using vec4::vec4;
 
-    rgb_color() : vec3(0.0, 0.0, 0.0) {}
+    rgba() : vec4(0.0) {}
     // This is stupid, but it works
-    rgb_color(const vec3& base) : vec3(base) {}
+    rgba(const vec4& base) : vec4(base) {}
 
-    Scalar r() const { return m_data[0]; }
-    Scalar g() const { return m_data[1]; }
-    Scalar b() const { return m_data[2]; }
+    Scalar r() const { return x(); }
+    Scalar g() const { return y(); }
+    Scalar b() const { return z(); }
+    Scalar a() const { return w(); }
 };
 
-inline std::ostream& operator<<(std::ostream& out, const rgb_color& color)
+inline std::ostream& operator<<(std::ostream& out, const rgba& color)
 {
     out << color.r() << ' ' << color.g() << ' ' << color.b();
     return out;

@@ -57,17 +57,17 @@ void Camera::init(const CameraSettings& settings)
     m_defocus_disk_v      = m_v * defocus_radius;
 }
 
-rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce)
+rgba Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce)
 {
     if (bounce >= m_settings.m_ray_bounces)
     {
-        return zeros<Scalar, 3>();
+        return zeros<Scalar, 4>();
     }
 
     std::optional<Intersection> intersection = aggregate->intersect(ray, 1e-3f, inf);
     if (intersection)
     {
-        rgb_color attenuation = zeros<Scalar, 3>();
+        rgba attenuation = zeros<Scalar, 4>();
 
         assert(intersection->m_material != nullptr);
         std::optional<Ray> scattered = intersection->m_material->scatter(ray, intersection.value(), attenuation);
@@ -77,14 +77,14 @@ rgb_color Camera::ray_color(const Ray& ray, const Aggregate* aggregate, u32 boun
         }
         else
         {
-            return zeros<Scalar, 3>();
+            return zeros<Scalar, 4>();
         }
     }
 
     vec3   udir  = normalized(ray.m_direction);
     Scalar blend = 0.5 * (udir[1] + 1.0);
 
-    rgb_color result = (1.0 - blend) * rgb_color(1.0, 1.0, 1.0) + blend * rgb_color(0.5, 0.7, 1.0);
+    rgba result = (1.0 - blend) * rgba(1.0, 1.0, 1.0, 1.0) + blend * rgba(0.5, 0.7, 1.0, 1.0);
     return result;
 }
 
@@ -102,7 +102,7 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
     {
         for (u32 u = 0; u < m_settings.m_image_width; ++u)
         {
-            rgb_color sampled_color = zeros<Scalar, 3>();
+            rgba sampled_color = zeros<Scalar, 4>();
             for (u32 sample = 0; sample < m_settings.m_samples_per_pixel; ++sample)
             {
                 // Jitter the ray around the pixel center
@@ -129,7 +129,7 @@ Ray Camera::jittered_ray(u32 u, u32 v)
     vec3 sample_loc = m_settings.m_pixel_00_loc + ((u + jitter_offset[0]) * m_settings.m_pixel_delta_u) +
                       ((v + jitter_offset[1]) * m_settings.m_pixel_delta_v);
     vec3 ray_direction = normalized(sample_loc - m_settings.m_position);
-    vec3 ray_origin    = vec3(m_settings.m_defocus_angle <= 0.0 ? m_settings.m_position.m_data : sample_defocus_disk().m_data);
+    vec3 ray_origin    = vec3(m_settings.m_defocus_angle <= 0.0 ? m_settings.m_position.data : sample_defocus_disk().data);
     return Ray(ray_origin, ray_direction);
 }
 

@@ -47,7 +47,7 @@ class Camera
 
   private:
     void      init(const CameraSettings& settings);
-    rgb_color ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce);
+    rgba ray_color(const Ray& ray, const Aggregate* aggregate, u32 bounce);
     vec3      sample_square() const;
     vec3      sample_defocus_disk() const;
     Ray       jittered_ray(u32 u, u32 v);
