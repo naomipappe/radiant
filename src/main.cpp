@@ -46,11 +46,11 @@ int main(int argc, char* argv[])
 
     CameraSettings settings{};
     settings.m_image_width       = 800;
-    settings.m_samples_per_pixel = 16;
-    settings.m_ray_bounces       = 3;
+    settings.m_samples_per_pixel = 50;
+    settings.m_ray_bounces       = 25;
     settings.m_vfow_deg          = 20;
 
-    settings.m_look_from      = vec3(0.0f, 0.0f, 10.0f);
+    settings.m_look_from      = vec3(-2.0f, 0.0f, 10.0f);
     settings.m_look_at        = vec3(0.0f, 0.0f, 0.0f);
     settings.m_world_up       = vec3(0.0f, 1.0f, 0.0f);
     settings.m_defocus_angle  = 0.1;
@@ -72,14 +72,15 @@ int main(int argc, char* argv[])
     fmt::println("Triangle count in an imported mesh {}", triangles.size());
 
     std::shared_ptr<Sphere> ground_sphere = std::make_shared<Sphere>(vec3(0.0, -101, -1.0), 100.0);
+    std::shared_ptr<Sphere> left_sphere = std::make_shared<Sphere>(vec3(-3.0, 1, 0.0), 2.0);
     std::shared_ptr<Sphere> light_sphere  = std::make_shared<Sphere>(vec3(3.2, 2, 0.0), 3);
 
     std::shared_ptr<Lambertian> material_ground = std::make_shared<Lambertian>(vec3(0.8f, 0.8f, 0.0f));
     std::shared_ptr<Lambertian> lambertian      = std::make_shared<Lambertian>(vec3(0.1f, 0.5f, 0.2f));
     std::shared_ptr<Lambertian> material_light  = std::make_shared<Lambertian>(vec3(1.0f, 1.0f, 1.0f));
     material_light->m_emissive                  = vec3(1.0f, 1.0f, 1.0f);
-    std::shared_ptr<Dielectric> dielectric      = std::make_shared<Dielectric>(1.0 / 1.33);
-    std::shared_ptr<Metal>      metal           = std::make_shared<Metal>(vec3(0.0, 66.0 / 256.0, 37.0 / 256.0), 0.1f);
+    std::shared_ptr<Dielectric> dielectric      = std::make_shared<Dielectric>(1.9);
+    std::shared_ptr<Metal>      metal           = std::make_shared<Metal>(vec3(0.0, 66.0 / 256.0, 37.0 / 256.0), 0.6f);
 
     std::vector<std::shared_ptr<Primitive>> triangle_prims;
     triangle_prims.reserve(triangles.size());
@@ -90,11 +91,13 @@ int main(int argc, char* argv[])
     }
 
     std::shared_ptr<Primitive> ground = std::make_shared<Primitive>(ground_sphere, material_ground);
+    std::shared_ptr<Primitive> left = std::make_shared<Primitive>(left_sphere, dielectric);
     std::shared_ptr<Primitive> light  = std::make_shared<Primitive>(light_sphere, material_light);
 
     BVHAggregate aggregate;
     // Populate the scene
     aggregate.insert(ground.get());
+    aggregate.insert(left.get());
     aggregate.insert(light.get());
 
     for (const auto& triangle_prim : triangle_prims)
