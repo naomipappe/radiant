@@ -1,9 +1,12 @@
 #pragma once
 
 #include "core/types.hpp"
+#include "core/vec.hpp"
 #include <vector>
+
 namespace radiant
 {
+
 struct RenderTarget
 {
     std::vector<vec3> render_target;
