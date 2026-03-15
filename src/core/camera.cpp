@@ -92,9 +92,9 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
 
     printf("Rendering to image\n");
     #pragma omp parallel for schedule(dynamic, 8) collapse(2)
-    for (u32 v = 0; v < m_settings.m_image_height; ++v)
+    for (i32 v = 0; v < m_settings.m_image_height; ++v)
     {
-        for (u32 u = 0; u < m_settings.m_image_width; ++u)
+        for (i32 u = 0; u < m_settings.m_image_width; ++u)
         {
             vec3 sampled_color = zeros<Scalar, 3>();
             for (u32 sample = 0; sample < m_settings.m_samples_per_pixel; ++sample)
