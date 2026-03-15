@@ -24,3 +24,6 @@ add_subdirectory(external)
 
 target_include_directories(radiant PRIVATE include)
 target_link_libraries(radiant PRIVATE stb fmt::fmt rapidobj::rapidobj SDL3::SDL3)
+
+find_package(OpenMP REQUIRED)
+target_link_libraries(radiant PRIVATE OpenMP::OpenMP_CXX)

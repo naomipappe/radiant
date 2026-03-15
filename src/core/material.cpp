@@ -27,7 +27,7 @@ Metal::Metal(const vec3& albedo, Scalar roughness) : m_albedo(albedo), m_roughne
 Ray Metal::scatter(const Ray& ray, Intersection& intersection, vec3& attenuation) const
 {
     vec3 reflected = reflect(ray.m_direction, intersection.m_normal).normalize();
-    reflected += random<Scalar, 3>() * m_roughness;
+    reflected += sample_sphere_hemisphere_rejection(intersection.m_normal) * m_roughness;
     attenuation = m_albedo;
     return { intersection.m_intersection, normalized(reflected) };
 }

@@ -1,4 +1,3 @@
-#include "SDL3/SDL_mutex.h"
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_render.h"
 #include "SDL3/SDL_video.h"
@@ -72,12 +71,12 @@ int main(int argc, char* argv[])
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-    SDL_SetRenderLogicalPresentation(renderer, window_height, window_height, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    SDL_SetRenderLogicalPresentation(renderer, window_width, window_height, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     CameraSettings settings{};
     settings.m_image_width       = 800;
-    settings.m_samples_per_pixel = 4;
-    settings.m_ray_bounces       = 4;
+    settings.m_samples_per_pixel = 1;
+    settings.m_ray_bounces       = 12;
     settings.m_vfow_deg          = 20;
 
     settings.m_look_from      = vec3(-2.0f, 0.0f, 10.0f);
@@ -117,7 +116,7 @@ int main(int argc, char* argv[])
     std::shared_ptr<Lambertian> material_light  = std::make_shared<Lambertian>(vec3(1.0f, 1.0f, 1.0f));
     material_light->m_emissive                  = vec3(1.0f, 1.0f, 1.0f);
     std::shared_ptr<Dielectric> dielectric      = std::make_shared<Dielectric>(1.9);
-    std::shared_ptr<Metal>      metal           = std::make_shared<Metal>(vec3(0.0, 66.0 / 256.0, 37.0 / 256.0), 0.6f);
+    std::shared_ptr<Metal>      metal           = std::make_shared<Metal>(vec3(1.0, 1.0, 1.0), 0.05f);
 
     std::vector<std::shared_ptr<Primitive>> triangle_prims;
     triangle_prims.reserve(triangles.size());
@@ -128,7 +127,7 @@ int main(int argc, char* argv[])
     }
 
     std::shared_ptr<Primitive> ground = std::make_shared<Primitive>(ground_sphere, material_ground);
-    std::shared_ptr<Primitive> left   = std::make_shared<Primitive>(left_sphere, dielectric);
+    std::shared_ptr<Primitive> left   = std::make_shared<Primitive>(left_sphere, metal);
     std::shared_ptr<Primitive> light  = std::make_shared<Primitive>(light_sphere, material_light);
 
     BVHAggregate aggregate;
@@ -161,6 +160,7 @@ int main(int argc, char* argv[])
         }
 
         camera.render(&aggregate, target);
+        target.frame++;
 
         void* pixels;
         int   pitch;
@@ -178,14 +178,14 @@ int main(int argc, char* argv[])
                 p[0] = static_cast<uint8_t>(std::clamp(garbage::linear_to_gamma(c[0]), 0.0, 1.0) * 255.0); // R
                 p[1] = static_cast<uint8_t>(std::clamp(garbage::linear_to_gamma(c[1]), 0.0, 1.0) * 255.0); // G
                 p[2] = static_cast<uint8_t>(std::clamp(garbage::linear_to_gamma(c[2]), 0.0, 1.0) * 255.0); // B
-                p[3] = 255;                                                                    // A
+                p[3] = 255;                                                                                // A
             }
         }
 
         SDL_UnlockTexture(texture);
 
         SDL_RenderClear(renderer);
-        SDL_RenderTexture(renderer, texture, NULL, NULL);
+        SDL_RenderTexture(renderer, texture, nullptr, nullptr);
         SDL_RenderPresent(renderer);
     }
 
