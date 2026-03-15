@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
     CameraSettings settings{};
     settings.m_image_width       = 800;
     settings.m_samples_per_pixel = 1;
-    settings.m_ray_bounces       = 12;
+    settings.m_ray_bounces       = 3;
     settings.m_vfow_deg          = 20;
 
     settings.m_look_from      = vec3(-2.0f, 0.0f, 10.0f);
