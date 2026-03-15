@@ -10,10 +10,10 @@
 #include <cmath>
 #include <core/camera.hpp>
 
-#include <logging/logging.hpp>
-
 #include <core/probability/sampling.hpp>
 #include <optional>
+
+#include <omp.h>
 
 namespace radiant
 {
@@ -72,7 +72,7 @@ vec3 Camera::trace(const Ray& ray, const Aggregate* aggregate)
         }
         else
         {
-            L += throughput * 0;
+            L += throughput * vec3(0.1f, 0.1f, 0.1f);
             break;
         }
     }
@@ -86,9 +86,12 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
         render_target.render_target.resize(m_settings.m_image_height * m_settings.m_image_width, {});
         render_target.width  = m_settings.m_image_width;
         render_target.height = m_settings.m_image_height;
+
+        render_target.accumulator.resize(m_settings.m_image_height * m_settings.m_image_width, {});
     }
 
     printf("Rendering to image\n");
+    #pragma omp parallel for schedule(dynamic, 8) collapse(2)
     for (u32 v = 0; v < m_settings.m_image_height; ++v)
     {
         for (u32 u = 0; u < m_settings.m_image_width; ++u)
@@ -96,14 +99,16 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
             vec3 sampled_color = zeros<Scalar, 3>();
             for (u32 sample = 0; sample < m_settings.m_samples_per_pixel; ++sample)
             {
-                // Jitter the ray around the pixel center
                 sampled_color += trace(jittered_ray(u, v), aggregate);
             }
-            render_target.render_target[u + v * m_settings.m_image_width] = sampled_color * m_settings.m_sampling_scale;
-        }
-        if (v % 100 == 0)
-        {
-            fmt::println("Completed {}/{}", v, m_settings.m_image_height);
+            sampled_color *= m_settings.m_sampling_scale;
+
+            // Accumulate into float buffer (no quantization loss)
+            render_target.accumulator[u + v * m_settings.m_image_width] += sampled_color;
+
+            // Display buffer = true average over all frames so far
+            render_target.render_target[u + v * m_settings.m_image_width] =
+                render_target.accumulator[u + v * m_settings.m_image_width] / float(render_target.frame);
         }
     }
 }
