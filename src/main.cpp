@@ -14,6 +14,7 @@
 #include "core/primitive.hpp"
 #include "core/render_target.hpp"
 #include "importers/obj.hpp"
+#include "core/scene.hpp"
 #include <garbage/garbage_dump.hpp>
 
 #include <core/vec.hpp>
@@ -150,6 +151,9 @@ int main(int argc, char* argv[])
     std::shared_ptr<Primitive> left   = std::make_shared<Primitive>(left_sphere, metal);
     std::shared_ptr<Primitive> light  = std::make_shared<Primitive>(light_sphere, material_light);
 
+    Scene s;
+    s.m_materials = {material_light};
+
     BVHAggregate aggregate;
     // Populate the scene
     aggregate.insert(ground.get());
@@ -183,28 +187,35 @@ int main(int argc, char* argv[])
             }
         }
 
+        SDL_SetRenderScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+        SDL_SetRenderDrawColorFloat(renderer, 1, 1, 1, 1);
+        SDL_RenderClear(renderer);
+
+        void* pixels;
+        int   pitch;
+        SDL_LockTexture(texture, NULL, &pixels, &pitch);
+        uint8_t* dst = static_cast<uint8_t*>(pixels);
+
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
         {
             ImGui::Begin("Debug"); // Create a window called "Hello, world!" and append into it.
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            s.imgui_traverse();
             ImGui::End();
+        }
+        if (s.m_dirty)
+        {
+            std::fill(render_target.render_target.begin(), render_target.render_target.end(), vec3{});
+            s.m_dirty = false;
         }
 
         ImGui::Render();
-        SDL_SetRenderScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
-        SDL_SetRenderDrawColorFloat(renderer, 1, 1, 1, 1);
-        SDL_RenderClear(renderer);
 
         camera.render(&aggregate, render_target);
         render_target.frame++;
 
-        void* pixels;
-        int   pitch;
-        SDL_LockTexture(texture, NULL, &pixels, &pitch);
-
-        uint8_t* dst = static_cast<uint8_t*>(pixels);
         for (int y = 0; y < settings.m_image_height; ++y)
         {
             for (int x = 0; x < settings.m_image_width; ++x)
