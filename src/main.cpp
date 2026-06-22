@@ -1,12 +1,18 @@
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_render.h"
 #include "SDL3/SDL_video.h"
+#include "imgui.h"
+#include "backends/imgui_impl_sdl3.h"
+#include "backends/imgui_impl_sdlrenderer3.h"
+#include "fmt/base.h"
+
 #include "core/acceleration_structures/bvh_aggregate.hpp"
 #include "core/camera.hpp"
 #include "core/material.hpp"
 #include "core/primitive.hpp"
 #include "core/render_target.hpp"
-#include "fmt/base.h"
 #include "importers/obj.hpp"
 #include <garbage/garbage_dump.hpp>
 
@@ -18,9 +24,6 @@
 #include <algorithm>
 #include <memory>
 #include <vector> // TODO: Remove STL when bored
-
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
 
 using namespace radiant;
 
@@ -51,7 +54,6 @@ int main(int argc, char* argv[])
         asset_source = std::filesystem::path("../assets/cube/cube.obj");
     }
 
-    // Init SDL3, code based on sample 07
     SDL_Window*   window   = nullptr;
     SDL_Renderer* renderer = nullptr;
     SDL_Texture*  texture  = nullptr;
@@ -66,7 +68,10 @@ int main(int argc, char* argv[])
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-    if (!SDL_CreateWindowAndRenderer("Radiant", window_width, window_height, SDL_WINDOW_RESIZABLE, &window, &renderer))
+    float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+
+    if (!SDL_CreateWindowAndRenderer(
+            "Radiant", main_scale * window_width, main_scale * window_height, SDL_WINDOW_RESIZABLE, &window, &renderer))
     {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -93,6 +98,21 @@ int main(int argc, char* argv[])
     {
         SDL_Log("Couldn't create streaming texture: %s", SDL_GetError());
     }
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    ImGui::StyleColorsDark();
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for dynamic style scaling,
+                                     // changing this requires resetting Style + calling this again)
+    style.FontScaleDpi = main_scale;
+
+    ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+    ImGui_ImplSDLRenderer3_Init(renderer);
 
     u32   mesh_idx = meshes.size();
     Mesh& mesh     = meshes.emplace_back(import_mesh(asset_source));
@@ -153,11 +173,26 @@ int main(int argc, char* argv[])
         fmt::println("In the loop");
         while (SDL_PollEvent(&event))
         {
+            ImGui_ImplSDL3_ProcessEvent(&event);
             if (event.type == SDL_EVENT_QUIT)
             {
                 running = false;
             }
         }
+
+        ImGui_ImplSDLRenderer3_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+        {
+            ImGui::Begin("Debug"); // Create a window called "Hello, world!" and append into it.
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::End();
+        }
+
+        ImGui::Render();
+        SDL_SetRenderScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+        SDL_SetRenderDrawColorFloat(renderer, 1, 1, 1, 1);
+        SDL_RenderClear(renderer);
 
         camera.render(&aggregate, target);
         target.frame++;
@@ -184,10 +219,14 @@ int main(int argc, char* argv[])
 
         SDL_UnlockTexture(texture);
 
-        SDL_RenderClear(renderer);
         SDL_RenderTexture(renderer, texture, nullptr, nullptr);
+        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
         SDL_RenderPresent(renderer);
     }
+
+    ImGui_ImplSDLRenderer3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
 
     // TODO: Make collecting counters and stats more easy then ifdef
 #ifndef NDEBUG
