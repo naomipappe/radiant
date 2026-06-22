@@ -3,13 +3,11 @@
 #include "importers/obj.hpp"
 
 #include "core/cache/buffer_storage.hpp"
-#include "core/shapes/triangle.hpp"
 #include "core/types.hpp"
 #include "fmt/base.h"
 #include "fmt/printf.h"
 
 #include <cstdlib>
-#include <memory>
 #include <span>
 
 namespace radiant

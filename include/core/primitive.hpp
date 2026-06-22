@@ -6,7 +6,7 @@
 #include <core/vec.hpp>
 #include <core/ray.hpp>
 #include <core/intersection.hpp>
-#include <core/shapes/shape.hpp>
+#include <core/shape.hpp>
 #include <core/material.hpp>
 
 namespace radiant
@@ -15,18 +15,16 @@ namespace radiant
 
 struct Primitive
 {
-    Primitive(const std::shared_ptr<Shape>& shape, const std::shared_ptr<Material>& material) :
-        m_shape(shape), m_material(material)
-    {}
+    Primitive(const Shape& shape, const std::shared_ptr<Material>& material) : m_shape(shape), m_material(material) {}
 
     [[nodiscard]] bool test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const
     {
-        return m_shape->test_intersection(r, tmin, tmax);
+        return m_shape.test_intersection(r, tmin, tmax);
     }
 
     [[nodiscard]] std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const
     {
-        if (std::optional<Intersection> intersection = m_shape->intersect(r, tmin, tmax))
+        if (std::optional<Intersection> intersection = m_shape.intersect(r, tmin, tmax))
         {
             intersection->m_material = m_material.get();
             return intersection;
@@ -34,10 +32,10 @@ struct Primitive
         return std::nullopt;
     }
 
-    [[nodiscard]] vec3 aabb_min() const { return m_shape->aabb_min; }
-    [[nodiscard]] vec3 aabb_max() const { return m_shape->aabb_max; }
+    [[nodiscard]] vec3 aabb_min() const { return m_shape.aabb_min; }
+    [[nodiscard]] vec3 aabb_max() const { return m_shape.aabb_max; }
 
-    std::shared_ptr<Shape>    m_shape;
+    Shape                     m_shape;
     std::shared_ptr<Material> m_material;
 };
 

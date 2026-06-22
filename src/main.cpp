@@ -8,18 +8,17 @@
 #include "backends/imgui_impl_sdlrenderer3.h"
 #include "fmt/base.h"
 
-#include "core/acceleration_structures/bvh_aggregate.hpp"
+#include "core/acceleration_structures/bvh.hpp"
 #include "core/camera.hpp"
 #include "core/material.hpp"
 #include "core/primitive.hpp"
 #include "core/render_target.hpp"
+#include "core/resource_manager.h"
 #include "importers/obj.hpp"
 #include "core/scene.hpp"
 #include <garbage/garbage_dump.hpp>
 
 #include <core/vec.hpp>
-#include <core/shapes/sphere.hpp>
-#include <core/shapes/triangle.hpp>
 
 #include <filesystem>
 #include <algorithm>
@@ -115,22 +114,22 @@ int main(int argc, char* argv[])
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer3_Init(renderer);
 
-    u32   mesh_idx = meshes.size();
-    Mesh& mesh     = meshes.emplace_back(import_mesh(asset_source));
+    u64   mesh_idx = ResourceManager::add_mesh(import_mesh(asset_source));
+    Mesh& mesh     = ResourceManager::get_mesh(mesh_idx);
 
-    std::vector<std::shared_ptr<Triangle>> triangles;
+    std::vector<Shape> triangles;
     triangles.reserve(mesh.m_num_triangles);
 
     for (u32 t = 0; t < mesh.m_num_triangles; ++t)
     {
-        triangles.emplace_back(std::make_shared<Triangle>(mesh_idx, t));
+        triangles.emplace_back(make_triangle(mesh_idx, t));
     }
 
     fmt::println("Triangle count in an imported mesh {}", triangles.size());
 
-    std::shared_ptr<Sphere> ground_sphere = std::make_shared<Sphere>(vec3(0.0, -101, -1.0), 100.0);
-    std::shared_ptr<Sphere> left_sphere   = std::make_shared<Sphere>(vec3(-3.0, 1, 0.0), 2.0);
-    std::shared_ptr<Sphere> light_sphere  = std::make_shared<Sphere>(vec3(3.2, 2, 0.0), 3);
+    Shape ground_sphere = make_sphere(vec3(0.0, -101, -1.0), 100.0);
+    Shape left_sphere   = make_sphere(vec3(-3.0, 1, 0.0), 2.0);
+    Shape light_sphere  = make_sphere(vec3(3.2, 2, 0.0), 3);
 
     std::shared_ptr<Lambertian> material_ground = std::make_shared<Lambertian>(vec3(0.8f, 0.8f, 0.0f));
     std::shared_ptr<Lambertian> lambertian      = std::make_shared<Lambertian>(vec3(0.1f, 0.5f, 0.2f));
@@ -139,30 +138,30 @@ int main(int argc, char* argv[])
     std::shared_ptr<Dielectric> dielectric      = std::make_shared<Dielectric>(1.9);
     std::shared_ptr<Metal>      metal           = std::make_shared<Metal>(vec3(1.0, 1.0, 1.0), 0.05f);
 
-    std::vector<std::shared_ptr<Primitive>> triangle_prims;
+    std::vector<Primitive> triangle_prims;
     triangle_prims.reserve(triangles.size());
 
     for (const auto& triangle : triangles)
     {
-        triangle_prims.push_back(std::make_shared<Primitive>(triangle, lambertian));
+        triangle_prims.emplace_back(triangle, lambertian);
     }
 
-    std::shared_ptr<Primitive> ground = std::make_shared<Primitive>(ground_sphere, material_ground);
-    std::shared_ptr<Primitive> left   = std::make_shared<Primitive>(left_sphere, metal);
-    std::shared_ptr<Primitive> light  = std::make_shared<Primitive>(light_sphere, material_light);
+    Primitive ground(ground_sphere, material_ground);
+    Primitive left(left_sphere, metal);
+    Primitive light(light_sphere, material_light);
 
     Scene s;
     s.m_materials = { material_light };
 
-    BVHAggregate aggregate;
+    BVH aggregate;
     // Populate the scene
-    aggregate.insert(ground.get());
-    aggregate.insert(left.get());
-    aggregate.insert(light.get());
+    aggregate.insert(&ground);
+    aggregate.insert(&left);
+    aggregate.insert(&light);
 
     for (const auto& triangle_prim : triangle_prims)
     {
-        aggregate.insert(triangle_prim.get());
+        aggregate.insert(&triangle_prim);
     }
 
     aggregate.build();

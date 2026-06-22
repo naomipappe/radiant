@@ -4,7 +4,6 @@
 
 #include "core/material.hpp"
 #include "core/primitive.hpp"
-#include "shapes/triangle.hpp"
 
 #include <memory>
 #include <vector>
