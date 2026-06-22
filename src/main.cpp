@@ -164,13 +164,16 @@ int main(int argc, char* argv[])
     aggregate.build();
 
     // Render the scene to the image buffer
-    RenderTarget target{};
+    RenderTarget render_target{};
+    render_target.render_target.resize(settings.m_image_height * settings.m_image_width, {});
+    render_target.width  = settings.m_image_width;
+    render_target.height = settings.m_image_height;
+    render_target.frame  = 1;
 
     SDL_Event event;
     bool      running = true;
     while (running)
     {
-        fmt::println("In the loop");
         while (SDL_PollEvent(&event))
         {
             ImGui_ImplSDL3_ProcessEvent(&event);
@@ -194,8 +197,8 @@ int main(int argc, char* argv[])
         SDL_SetRenderDrawColorFloat(renderer, 1, 1, 1, 1);
         SDL_RenderClear(renderer);
 
-        camera.render(&aggregate, target);
-        target.frame++;
+        camera.render(&aggregate, render_target);
+        render_target.frame++;
 
         void* pixels;
         int   pitch;
@@ -206,7 +209,7 @@ int main(int argc, char* argv[])
         {
             for (int x = 0; x < settings.m_image_width; ++x)
             {
-                const vec3& c = target.render_target[x + y * settings.m_image_width];
+                const vec3& c = render_target.render_target[x + y * settings.m_image_width];
                 uint8_t*    p = dst + y * pitch + x * 4;
 
                 // Assuming vec3 is linear float [0..1], apply gamma correction
@@ -240,7 +243,7 @@ int main(int argc, char* argv[])
 #endif
 
     fmt::println("Writing to {}", destination.string());
-    garbage::write_png(target.render_target.data(), target.width, target.height, destination);
+    garbage::write_png(render_target.render_target.data(), render_target.width, render_target.height, destination);
 
     return 0;
 }
