@@ -81,16 +81,8 @@ vec3 Camera::trace(const Ray& ray, const Aggregate* aggregate)
 
 void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
 {
-    if (render_target.render_target.size() < m_settings.m_image_height * m_settings.m_image_width)
-    {
-        render_target.render_target.resize(m_settings.m_image_height * m_settings.m_image_width, {});
-        render_target.width  = m_settings.m_image_width;
-        render_target.height = m_settings.m_image_height;
+    assert(render_target.render_target.size() == m_settings.m_image_height * m_settings.m_image_width);
 
-        render_target.accumulator.resize(m_settings.m_image_height * m_settings.m_image_width, {});
-    }
-
-    printf("Rendering to image\n");
     #pragma omp parallel for schedule(dynamic, 8) collapse(2)
     for (i32 v = 0; v < m_settings.m_image_height; ++v)
     {
@@ -104,11 +96,8 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
             sampled_color *= m_settings.m_sampling_scale;
 
             // Accumulate into float buffer (no quantization loss)
-            render_target.accumulator[u + v * m_settings.m_image_width] += sampled_color;
-
-            // Display buffer = true average over all frames so far
-            render_target.render_target[u + v * m_settings.m_image_width] =
-                render_target.accumulator[u + v * m_settings.m_image_width] / float(render_target.frame);
+            auto & current = render_target.render_target[u + v * m_settings.m_image_width];
+            current += (sampled_color - current) / float(render_target.frame);
         }
     }
 }
