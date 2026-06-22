@@ -11,13 +11,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(RADIANT_SOURCES
         src/main.cpp
         src/garbage/garbage_dump.cpp
-        src/core/shapes/sphere.cpp
-        src/core/linear_aggregate.cpp
         src/core/camera.cpp
         src/core/material.cpp
         src/core/math.cpp
         src/importers/obj.cpp
-        src/core/shapes/triangle.cpp)
+        src/core/shape.cpp)
 
 add_executable(radiant ${RADIANT_SOURCES} ${IMGUI_SRC})
 add_subdirectory(external)

@@ -9,7 +9,6 @@
 #include <core/types.hpp>
 #include <core/math.hpp>
 #include <core/primitive.hpp>
-#include <core/acceleration_structures/aggregate.hpp>
 
 namespace radiant
 {
@@ -28,35 +27,31 @@ struct BVHNode
     u32  primitive_count     = 0;
 };
 
-class BVHAggregate : public Aggregate
+class BVH
 {
   public:
-    explicit BVHAggregate(std::span<Primitive*> primitives) : m_primitives(primitives.begin(), primitives.end())
+    BVH() = default;
+    explicit BVH(std::span<const Primitive*> primitives) : m_primitives(primitives.begin(), primitives.end())
     {
         build(primitives);
         m_dirty = false;
     }
 
-    BVHAggregate()           = default;
-    ~BVHAggregate() override = default;
-
-    void insert(Primitive* primitive) override
+    void insert(const Primitive* primitive)
     {
         m_primitives.push_back(primitive);
         m_dirty = true;
     }
 
-    [[nodiscard]] bool test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const override
+    [[nodiscard]] bool test_intersection(const Ray& r, Scalar tmin, Scalar tmax) const
     {
         return intersect(r, tmin, tmax) != std::nullopt;
     }
 
-    [[nodiscard]] std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const override
+    [[nodiscard]] std::optional<Intersection> intersect(const Ray& r, Scalar tmin, Scalar tmax) const
     {
         return intersect(r, tmin, tmax, 0);
     }
-
-    void clear() override {}
 
     void build()
     {
@@ -66,7 +61,7 @@ class BVHAggregate : public Aggregate
     }
 
   protected:
-    void build(const std::span<Primitive*> primitives)
+    void build(const std::span<const Primitive*> primitives)
     {
         m_nodes.reserve(2 * primitives.size() - 1);
         m_primitive_indices.resize(m_primitives.size());
@@ -118,7 +113,7 @@ class BVHAggregate : public Aggregate
         u32 j = i + node.primitive_count - 1;
         while (i <= j)
         {
-            if (m_primitives[m_primitive_indices[i]]->m_shape->m_centroid[axis] < split_pos)
+            if (m_primitives[m_primitive_indices[i]]->m_shape.m_centroid[axis] < split_pos)
             {
                 i++;
             }
@@ -213,7 +208,7 @@ class BVHAggregate : public Aggregate
   private:
     bool                    m_dirty{ true };
     std::vector<BVHNode>    m_nodes;
-    std::vector<Primitive*> m_primitives;
+    std::vector<const Primitive*> m_primitives;
     std::vector<u32>        m_primitive_indices;
     const u32               PRIMITIVE_COUNT_CUTOFF = 12;
 #ifndef NDEBUG

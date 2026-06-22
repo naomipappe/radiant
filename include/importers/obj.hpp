@@ -1,10 +1,8 @@
 #pragma once
 
-#include <memory>
-#include <utility>
+#include <core/mesh.hpp>
 #include <filesystem>
 
-#include "core/shapes/triangle.hpp"
 
 namespace radiant
 {

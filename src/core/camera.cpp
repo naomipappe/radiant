@@ -1,4 +1,4 @@
-#include "core/acceleration_structures/aggregate.hpp"
+#include "core/acceleration_structures/bvh.hpp"
 #include "core/math.hpp"
 #include "core/ray.hpp"
 #include "core/render_target.hpp"
@@ -56,14 +56,14 @@ void Camera::init(const CameraSettings& settings)
     m_defocus_disk_v      = m_v * defocus_radius;
 }
 
-vec3 Camera::trace(const Ray& ray, const Aggregate* aggregate)
+vec3 Camera::trace(const Ray& ray, const BVH* acceleration_structure)
 {
     vec3 L          = zeros<Scalar, 3>();
     vec3 throughput = ones<Scalar, 3>();
     Ray  r          = ray;
     for (uint32_t i = 0; i < m_settings.m_ray_bounces; ++i)
     {
-        if (auto intersect = aggregate->intersect(r, 1e-3, inf))
+        if (auto intersect = acceleration_structure->intersect(r, 1e-3, inf))
         {
             L += throughput * intersect->m_material->m_emissive;
             vec3 color_mat;
@@ -79,7 +79,7 @@ vec3 Camera::trace(const Ray& ray, const Aggregate* aggregate)
     return L;
 }
 
-void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
+void Camera::render(const BVH* acceleration_structure, RenderTarget& render_target)
 {
     assert(render_target.render_target.size() == m_settings.m_image_height * m_settings.m_image_width);
 
@@ -91,7 +91,7 @@ void Camera::render(const Aggregate* aggregate, RenderTarget& render_target)
             vec3 sampled_color = zeros<Scalar, 3>();
             for (u32 sample = 0; sample < m_settings.m_samples_per_pixel; ++sample)
             {
-                sampled_color += trace(jittered_ray(u, v), aggregate);
+                sampled_color += trace(jittered_ray(u, v), acceleration_structure);
             }
             sampled_color *= m_settings.m_sampling_scale;
 
