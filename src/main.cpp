@@ -152,7 +152,7 @@ int main(int argc, char* argv[])
     std::shared_ptr<Primitive> light  = std::make_shared<Primitive>(light_sphere, material_light);
 
     Scene s;
-    s.m_materials = {material_light};
+    s.m_materials = { material_light };
 
     BVHAggregate aggregate;
     // Populate the scene
@@ -175,7 +175,8 @@ int main(int argc, char* argv[])
     render_target.frame  = 1;
 
     SDL_Event event;
-    bool      running = true;
+    bool      running   = true;
+    bool      rendering = true;
     while (running)
     {
         while (SDL_PollEvent(&event))
@@ -191,11 +192,6 @@ int main(int argc, char* argv[])
         SDL_SetRenderDrawColorFloat(renderer, 1, 1, 1, 1);
         SDL_RenderClear(renderer);
 
-        void* pixels;
-        int   pitch;
-        SDL_LockTexture(texture, NULL, &pixels, &pitch);
-        uint8_t* dst = static_cast<uint8_t*>(pixels);
-
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
@@ -203,35 +199,42 @@ int main(int argc, char* argv[])
             ImGui::Begin("Debug"); // Create a window called "Hello, world!" and append into it.
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             s.imgui_traverse();
+            rendering = ImGui::Button(rendering ? "Pause" : "Resume") ? !rendering : rendering;
             ImGui::End();
         }
         if (s.m_dirty)
         {
-            std::fill(render_target.render_target.begin(), render_target.render_target.end(), vec3{});
+            std::ranges::fill(render_target.render_target, vec3{});
             s.m_dirty = false;
         }
 
         ImGui::Render();
-
-        camera.render(&aggregate, render_target);
-        render_target.frame++;
-
-        for (int y = 0; y < settings.m_image_height; ++y)
+        if (rendering)
         {
-            for (int x = 0; x < settings.m_image_width; ++x)
+            void* pixels;
+            int   pitch;
+            SDL_LockTexture(texture, nullptr, &pixels, &pitch);
+            uint8_t* dst = static_cast<uint8_t*>(pixels);
+
+            camera.render(&aggregate, render_target);
+            render_target.frame++;
+
+            for (int y = 0; y < settings.m_image_height; ++y)
             {
-                const vec3& c = render_target.render_target[x + y * settings.m_image_width];
-                uint8_t*    p = dst + y * pitch + x * 4;
+                for (int x = 0; x < settings.m_image_width; ++x)
+                {
+                    const vec3& c = render_target.render_target[x + y * settings.m_image_width];
+                    uint8_t*    p = dst + y * pitch + x * 4;
 
-                // Assuming vec3 is linear float [0..1], apply gamma correction
-                p[0] = static_cast<uint8_t>(std::clamp(garbage::linear_to_gamma(c[0]), 0.0, 1.0) * 255.0); // R
-                p[1] = static_cast<uint8_t>(std::clamp(garbage::linear_to_gamma(c[1]), 0.0, 1.0) * 255.0); // G
-                p[2] = static_cast<uint8_t>(std::clamp(garbage::linear_to_gamma(c[2]), 0.0, 1.0) * 255.0); // B
-                p[3] = 255;                                                                                // A
+                    // Assuming vec3 is linear float [0..1], apply gamma correction
+                    p[0] = static_cast<uint8_t>(std::clamp(garbage::linear_to_gamma(c[0]), 0.0, 1.0) * 255.0); // R
+                    p[1] = static_cast<uint8_t>(std::clamp(garbage::linear_to_gamma(c[1]), 0.0, 1.0) * 255.0); // G
+                    p[2] = static_cast<uint8_t>(std::clamp(garbage::linear_to_gamma(c[2]), 0.0, 1.0) * 255.0); // B
+                    p[3] = 255;                                                                                // A
+                }
             }
+            SDL_UnlockTexture(texture);
         }
-
-        SDL_UnlockTexture(texture);
 
         SDL_RenderTexture(renderer, texture, nullptr, nullptr);
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
