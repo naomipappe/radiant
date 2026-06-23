@@ -152,6 +152,7 @@ int main(int argc, char* argv[])
 
     Scene s;
     s.m_materials = { material_light };
+    s.m_camera    = &camera;
 
     BVH aggregate;
     // Populate the scene
@@ -201,9 +202,11 @@ int main(int argc, char* argv[])
             rendering = ImGui::Button(rendering ? "Pause" : "Resume") ? !rendering : rendering;
             ImGui::End();
         }
+        // Scene dirty should be handled in scene before handing of to rendering
         if (s.m_dirty)
         {
             std::ranges::fill(render_target.render_target, vec3{});
+            camera.reset();
             s.m_dirty = false;
         }
 
