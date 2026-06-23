@@ -44,6 +44,14 @@ class Camera
 
     void render(const BVH* acceleration_structure, RenderTarget& render_target);
 
+    vec3& look_from() { return m_settings.m_look_from; }
+    vec3& look_at() { return m_settings.m_look_at; }
+
+    void reset()
+    {
+        init(m_settings);
+    }
+
   private:
     void init(const CameraSettings& settings);
     vec3 trace(const Ray& ray, const BVH* acceleration_structure);
